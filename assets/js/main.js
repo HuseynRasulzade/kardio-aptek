@@ -48,7 +48,8 @@
   if (shots.length) {
     var lb = document.createElement('div');
     lb.className = 'lb'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true');
-    lb.innerHTML = '<button class="x" aria-label="Bağla">×</button><button class="prev" aria-label="Əvvəlki">‹</button><img alt=""><p></p><button class="next" aria-label="Növbəti">›</button>';
+    var d = document.body.dataset;
+    lb.innerHTML = '<button class="x" aria-label="' + d.close + '">×</button><button class="prev" aria-label="' + d.prev + '">‹</button><img alt=""><p></p><button class="next" aria-label="' + d.next + '">›</button>';
     document.body.appendChild(lb);
     var img = $('img', lb), cap = $('p', lb), idx = 0;
     var show = function (i) {
@@ -76,7 +77,8 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var f = new FormData(form);
-      var text = 'Salam! Mən ' + f.get('name') + '.\nTelefon: ' + f.get('phone') + '\nMövzu: ' + f.get('topic') + '\n\n' + f.get('message');
+      var d = form.dataset;
+      var text = d.t1 + f.get('name') + '.\n' + d.t2 + ': ' + f.get('phone') + '\n' + d.t3 + ': ' + f.get('topic') + '\n\n' + f.get('message');
       window.open('https://wa.me/' + form.dataset.wa + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
     });
   }

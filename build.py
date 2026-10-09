@@ -9,12 +9,9 @@ PHONE_RAW = "+994502779434"
 PHONE_SHOW = "+994 50 277 94 34"
 WA = PHONE_RAW.lstrip("+")
 YEAR = 2024
-HOURS = "Hər gün 09:00 – 22:00"
 MAPQ = "Qara Qarayev metrostansiyası, S. Mirzəyev küçəsi, Bakı, Azerbaijan"
-MAP_EMBED = "https://maps.google.com/maps?q=" + MAPQ.replace(" ", "+") + "&z=16&output=embed&hl=az"
 MAP_LINK = "https://www.google.com/maps/search/?api=1&query=" + MAPQ.replace(" ", "+")
 MAP_DIR = "https://www.google.com/maps/dir/?api=1&destination=" + MAPQ.replace(" ", "+")
-CITY = "Qara Qarayev metrostansiyası yaxınlığı, S. Mirzəyev küçəsi, Bakı, AZ1002, Azərbaycan"
 
 LOGO = ('<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0f766e"/>'
         '<path d="M24 38S9 29.5 9 19.2C9 14.6 12.4 11 16.7 11c3 0 5.6 1.7 7.3 4.3C25.700 12.700 28.300 11 31.300 11 35.600 11 39 14.600 39 19.200 39 29.500 24 38 24 38Z" fill="#fff"/>'
@@ -34,123 +31,282 @@ ICON = {
     "drop": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.700s7 7.200 7 12a7 7 0 0 1-14 0c0-4.800 7-12 7-12Z"/></svg>',
 }
 
+
+# =========================================================================== i18n
+LANGS = ["az", "en", "ru"]
+LANG = "az"
+LANG_NAMES = {"az": "AZ", "en": "EN", "ru": "RU"}
+HTML_LANG = {"az": "az", "en": "en", "ru": "ru"}
+OG_LOCALE = {"az": "az_AZ", "en": "en_US", "ru": "ru_RU"}
+
+
+def T(a, en, ru):
+    return {"az": a, "en": en, "ru": ru}[LANG]
+
+
+def pfx():
+    return "" if LANG == "az" else "../"
+
+
+def outdir():
+    d = ROOT if LANG == "az" else ROOT / LANG
+    d.mkdir(exist_ok=True)
+    return d
+
+
+def units(x):
+    """Convert Azerbaijani unit abbreviations in an amount string."""
+    return (x.replace("mkq", T("mkq", "mcg", "мкг")).replace("mq", T("mq", "mg", "мг"))
+             .replace("BV", T("BV", "IU", "МЕ")).replace("50 000", T("50 000", "50,000", "50 000")))
+
+
+def hours():
+    return T("Hər gün 09:00 – 22:00", "Every day 09:00 – 22:00", "Ежедневно 09:00 – 22:00")
+
+
+def city():
+    return T("Qara Qarayev metrostansiyası yaxınlığı, S. Mirzəyev küçəsi, Bakı, AZ1002, Azərbaycan",
+             "Near Qara Qarayev metro station, S. Mirzayev street, Baku, AZ1002, Azerbaijan",
+             "Рядом со станцией метро «Гара Гараев», ул. С. Мирзоева, Баку, AZ1002, Азербайджан")
+
+
+def map_embed():
+    return "https://maps.google.com/maps?q=" + MAPQ.replace(" ", "+") + "&z=16&output=embed&hl=" + LANG
+
+
 NAV = [
-    ("index.html", "Ana səhifə"),
-    ("haqqimizda.html", "Haqqımızda"),
-    ("dermanlar.html", "Dərmanlar"),
-    ("xidmetler.html", "Xidmətlər"),
-    ("meslehetler.html", "Məsləhətlər"),
-    ("suallar.html", "Suallar"),
-    ("elaqe.html", "Əlaqə"),
+    ("index.html", ("Ana səhifə", "Home", "Главная")),
+    ("haqqimizda.html", ("Haqqımızda", "About us", "О нас")),
+    ("dermanlar.html", ("Dərmanlar", "Medicines", "Препараты")),
+    ("xidmetler.html", ("Xidmətlər", "Services", "Услуги")),
+    ("meslehetler.html", ("Məsləhətlər", "Health tips", "Советы")),
+    ("suallar.html", ("Suallar", "FAQ", "Вопросы")),
+    ("elaqe.html", ("Əlaqə", "Contact", "Контакты")),
 ]
+
+
+def nav_label(t):
+    return T(*t)
+
 
 # --------------------------------------------------------------------------- products
-PRODUCTS = [
-    dict(
-        slug="karno-mer", name="Karno Mer", cat="urek", kind="BAQM", kindcls="",
-        short="Ürək-damar sisteminin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.",
-        form="Kapsul", pack="30 kapsul (2×15 blister), karton qutu",
-        card="karno-card.jpg", head="karno-qutu.jpg",
-        comp_title="1 kapsulun tərkibi",
-        ing=[("L-karnitin", "L-carnitine", "500 mq"), ("Koenzim Q10", "Coenzyme Q10", "40 mq"), ("Kuersetin", "Quercetin", "25 mq")],
-        excip="Mikrokristallik sellüloza, maqnezium stearat, jelatin, oliqofruktoza, nişasta.",
-        indication="Ürək-damar sisteminin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.",
-        dose=["Böyüklər: 1 kapsul gündə 1 dəfə daxilə qəbul edilir.", "Doza və yaş həddi yalnız həkim məsləhəti ilə dəyişdirilə bilər."],
-        contra=["Məhsulun tərkibindəki hər hansı komponentə qarşı fərdi həssaslıq."],
-        storage="25 °C-dən yüksək olmayan temperaturda, quru, işıqdan qorunan və uşaqların əli çatmayan yerdə.",
-        shelf="3 il. Yararlılıq müddəti bitdikdən sonra qəbul etmək olmaz.",
-        mfr="FITO LAB MMC (Azərbaycan, Abşeron r-nu, Saray qəs., AZ0121)", brand="POLSHA PHARMA SP.Z.O.O., Jana Pawla str/II 3bf/1 05-091 Zabki",
-        series="FTL/1246", made="10.2024", exp="10.2027", reg="01-Q-00589", extra="QOST/ГОСТ 23058-89", rx="Reseptsiz",
-        gallery=[("karno-qutu.jpg", "Karno Mer — qutunun ön üzü"), ("karno-terkib.jpg", "Tərkib və istifadə qaydası"),
-                 ("karno-vereq.jpg", "İstifadə təlimatı vərəqi"), ("karno-istehsalci.jpg", "İstehsalçı və sertifikatlar"),
-                 ("karno-tarix.jpg", "Seriya, istehsal və son istifadə tarixi")],
-    ),
-    dict(
-        slug="depomer-d3-k2", name="Depomer D3+K2", cat="vitamin", kind="BAQM", kindcls="",
-        short="D3 və K2 vitaminlərinin əlavə mənbəyi — 15 ml damcı məhlul (50 000 BV).",
-        form="Daxilə qəbul üçün məhlul-damcı", pack="15 ml şüşə flakon, karton qutu (1 ml = 25 damcı)",
-        card="depomer-card.jpg", head="depomer-qutu.jpg",
-        comp_title="15 ml-in tərkibi (1 ml = 25 damcı)",
-        ing=[("Vitamin D3", "Cholecalciferol", "50 000 BV"), ("Vitamin K2", "Menaquinone", "200 mkq")],
-        excip="Zeytun yağı.",
-        indication="D3 və K2 vitaminlərinin əlavə mənbəyi kimi tövsiyə olunan vasitə.",
-        dose=["2–4 yaş arası uşaqlar: 1 damcı gündə 1 dəfə.", "4–14 yaş arası uşaqlar: 2 damcı gündə 1 dəfə.",
-              "14 yaşdan yuxarı uşaqlar və böyüklər: 4 damcı gündə 1 dəfə.",
-              "Doza və yaş həddi yalnız həkim məsləhəti ilə dəyişdirilə bilər.", "İstifadədən əvvəl flakonu çalxalayın."],
-        contra=["Tərkibindəki hər hansı inqrediyentə qarşı fərdi həssaslıq.", "D hipervitaminozu, hiperkalsiemiya, hiperkalsiuriya.",
-                "Böyrək çatmazlığı, böyrək daşları xəstəliyi.", "Ağciyər vərəminin aktiv forması."],
-        storage="25 °C-dən yüksək olmayan temperaturda, quru, işıqdan qorunan və uşaqların əli çatmayan yerdə.",
-        shelf="3 il. Yararlılıq müddəti bitdikdən sonra qəbul etmək olmaz.",
-        mfr="FITO LAB MMC (Azərbaycan, Abşeron r-nu, Saray qəs., AZ0121)", brand="POLSHA PHARMA SP.Z.O.O., Jana Pawla str/II 3bf/1 05-091 Zabki",
-        series="DK1012", made="02.2026", exp="02.2029", reg="01-Q-00589", extra="AQTA qeydiyyat № MQ-05-001738 · TŞ AZ 1006595881.003-2022", rx="Reseptsiz",
-        gallery=[("depomer-qutu.jpg", "Depomer D3+K2 — qutunun ön üzü"), ("depomer-terkib.jpg", "Tərkib və doza (Azərbaycan dilində)"),
-                 ("depomer-terkib-en.jpg", "Composition and dosage (English)"), ("depomer-vereq.jpg", "İstifadə təlimatı vərəqi")],
-    ),
-    dict(
-        slug="revimer", name="Revimer", cat="immun", kind="BAQM", kindcls="",
-        short="İmmun sistemin fəaliyyətini yaxşılaşdırmaq məqsədilə — 10 flakon × 15 ml məhlul.",
-        form="Daxilə qəbul üçün məhlul", pack="15 ml şüşə flakon, No.10, karton qutu",
-        card="revimer-card.jpg", head="revimer-qutu.jpg",
-        comp_title="15 ml-in tərkibi",
-        ing=[("Arı südü tozu, liofilizə olunmuş", "Royal jelly lyophilized powder", "200 mq"),
-             ("Barbados albalısı meyvə ekstraktı tozu", "Malpighia emarginata", "150 mq"),
-             ("Qaragilə meyvə konsentratı", "Vaccinium myrtillus", "750 mq"),
-             ("Qara kəndələş meyvə konsentratı", "Sambucus nigra", "500 mq"),
-             ("Böyürtkən meyvə ekstraktı", "Rubus fruticosus", "375 mq")],
-        excip="Deionizə olunmuş su, ksantan qətranı, limon turşusu, moruq aroması, kalium sorbat, natrium benzoat, sukraloza.",
-        indication="İmmun sistemin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.",
-        dose=["Böyüklər: 15 ml gündə 1 dəfə.", "Digər hallarda həkim məsləhəti ilə tövsiyə oluna bilər.", "Tövsiyə edilən sutkalıq dozanı keçməyin."],
-        contra=["Məhsulun tərkibindəki hər hansı komponentə qarşı həssaslıq."],
-        storage="25 °C-dən yüksək olmayan temperaturda, quru və uşaqların əli çatmayan yerdə.",
-        shelf="3 il.",
-        mfr="EVA MED MMC (Azərbaycan Respublikası, Bakı)", brand="EVA MED Medicine",
-        series="116", made="05.01.2026", exp="05.01.2029", reg="", extra="", rx="Reseptsiz",
-        gallery=[("revimer-qutu.jpg", "Revimer — qutunun ön üzü"), ("revimer-terkib.jpg", "Tərkib, köməkçi maddələr və doza"),
-                 ("revimer-vereq.jpg", "İstifadə təlimatı vərəqi (1)"), ("revimer-vereq2.jpg", "İstifadə təlimatı vərəqi (2)"),
-                 ("revimer-istehsalci.jpg", "İstehsalçı və saxlanma şəraiti"), ("revimer-tarix.jpg", "İstehsal və son istifadə tarixi")],
-    ),
-    dict(
-        slug="chondramer", name="Chondramer", cat="oynaq", kind="Tibbi vasitə", kindcls="red",
-        short="Oynaq və əzələ ağrıları üçün istifadə olunan gel — 75 q.",
-        form="Yerli istifadə üçün gel", pack="75 q plastik tubik, karton qutu",
-        card="chondramer-card.jpg", head="chondramer-qutu.jpg",
-        comp_title="75 q gel-in tərkibi",
-        ing=[("Glukozamin sulfat", "Glucosamine sulphate", "800 mq"), ("Xondroitin sulfat", "Chondroitin sulphate", "200 mq"),
-             ("Metilsulfonilmetan", "Methylsulphonylmethane", "200 mq"), ("Bosvelliya ekstraktı", "Boswellia serrata extract", "120 mq"),
-             ("Evkalipt yağı", "Eucalyptus oil", "50 mq"), ("Kəklikotu yağı", "Thyme oil", "10 mq"), ("Mixək yağı", "Clove oil", "5 mq"),
-             ("Rozmarin yağı", "Rosemary oil", "12 mq"), ("Kamfora", "Camphor", "20 mq"), ("Mentol", "Menthol", "150 mq")],
-        excip="Aromaterapiya yağları (zəncəfil, lavanda, zirə, qoz, portağal yağı), qliserin, karbomer.",
-        indication="Oynaq və əzələ ağrıları üçün istifadə olunan tibbi vasitə.",
-        dose=["Yerli və xaricdən tətbiq edin. Birbaşa oynaqların və əzələlərin nahiyəsinə masaj edərək sürtün.",
-              "İstənilən effekti əldə etmək üçün təmizlənmiş dəri nahiyəsinə gündə ən azı 2–3 dəfə yerli olaraq istifadə edilməlidir.",
-              "Doza və yaş həddi yalnız həkim məsləhəti ilə dəyişdirilə bilər."],
-        contra=["Tərkibində olan hər hansı komponentə qarşı fərdi həssaslıq."],
-        storage="25 °C-dən yüksək olmayan temperaturda, quru, işıq düşməyən və uşaqların əli çatmayan yerdə.",
-        shelf="3 il. İstifadə müddəti bitdikdən sonra istifadə etməyin.",
-        mfr="FITO LAB MMC (Azərbaycan, Abşeron r-nu, Saray qəs., AZ0121)", brand="POLSHA PHARMA SP.Z.O.O., Jana Pawla str/II 3bf/1 05-091 Zabki",
-        series="CM1011", made="02.2025", exp="02.2028", reg="", extra="", rx="Reseptsiz",
-        gallery=[("chondramer-qutu.jpg", "Chondramer — qutunun ön üzü"), ("chondramer-terkib.jpg", "Tərkib və istifadə qaydası"),
-                 ("chondramer-vereq.jpg", "İstifadə təlimatı vərəqi"), ("chondramer-istehsalci.jpg", "İstehsalçı, seriya və tarixlər")],
-    ),
-]
-CATS = [("all", "Hamısı"), ("urek", "Ürək-damar"), ("vitamin", "Vitaminlər"), ("immun", "İmmunitet"), ("oynaq", "Oynaq və əzələ")]
+def products():
+    return [
+        dict(
+            slug="karno-mer", name="Karno Mer", cat="urek",
+            kind=T("BAQM", "Dietary supplement", "БАД"), medical=False,
+            short=T("Ürək-damar sisteminin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.",
+                    "Recommended to support the function of the cardiovascular system.",
+                    "Средство для улучшения функции сердечно-сосудистой системы."),
+            form=T("Kapsul", "Capsule", "Капсулы"),
+            pack=T("30 kapsul (2×15 blister), karton qutu", "30 capsules (2×15 blister), cardboard box", "30 капсул (2×15 блистер), картонная коробка"),
+            card="karno-card.jpg", head="karno-qutu.jpg",
+            comp_title=T("1 kapsulun tərkibi", "Composition per capsule", "Состав на 1 капсулу"),
+            ing=[(("L-karnitin", "L-carnitine", "L-карнитин"), "L-carnitine", "500 mq"),
+                 (("Koenzim Q10", "Coenzyme Q10", "Коэнзим Q10"), "Coenzyme Q10", "40 mq"),
+                 (("Kuersetin", "Quercetin", "Кверцетин"), "Quercetin", "25 mq")],
+            excip=T("Mikrokristallik sellüloza, maqnezium stearat, jelatin, oliqofruktoza, nişasta.",
+                    "Microcrystalline cellulose, magnesium stearate, gelatin, oligofructose, starch.",
+                    "Микрокристаллическая целлюлоза, стеарат магния, желатин, олигофруктоза, крахмал."),
+            indication=T("Ürək-damar sisteminin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.",
+                         "Recommended to improve the function of the cardiovascular system.",
+                         "Рекомендуется для улучшения функции сердечно-сосудистой системы."),
+            dose=T(["Böyüklər: 1 kapsul gündə 1 dəfə daxilə qəbul edilir.", "Doza və yaş həddi yalnız həkim məsləhəti ilə dəyişdirilə bilər."],
+                   ["Adults: 1 capsule once a day, taken orally.", "Dose and age limits may only be changed on a doctor's advice."],
+                   ["Взрослым: по 1 капсуле 1 раз в день внутрь.", "Дозировку и возрастные ограничения можно изменять только по рекомендации врача."]),
+            contra=T(["Məhsulun tərkibindəki hər hansı komponentə qarşı fərdi həssaslıq."],
+                     ["Individual sensitivity to any component of the product."],
+                     ["Индивидуальная чувствительность к любому из компонентов продукта."]),
+            storage=T("25 °C-dən yüksək olmayan temperaturda, quru, işıqdan qorunan və uşaqların əli çatmayan yerdə.",
+                      "At a temperature not above 25 °C, in a dry place protected from light and out of reach of children.",
+                      "При температуре не выше 25 °C, в сухом, защищённом от света и недоступном для детей месте."),
+            shelf=T("3 il", "3 years", "3 года"),
+            mfr=T("FITO LAB MMC (Azərbaycan, Abşeron r-nu, Saray qəs., AZ0121)", "FITO LAB MMC (Azerbaijan, Absheron district, Saray settlement, AZ0121)",
+                  "FITO LAB MMC (Азербайджан, Абшеронский р-н, пос. Сарай, AZ0121)"),
+            brand="POLSHA PHARMA SP.Z.O.O., Jana Pawla str/II 3bf/1 05-091 Zabki",
+            series="FTL/1246", made="10.2024", exp="10.2027", reg="01-Q-00589", extra="QOST/ГОСТ 23058-89",
+            gallery=[("karno-qutu.jpg", T("Karno Mer — qutunun ön üzü", "Karno Mer — front of the box", "Karno Mer — лицевая сторона коробки")),
+                     ("karno-terkib.jpg", T("Tərkib və istifadə qaydası", "Composition and directions", "Состав и способ применения")),
+                     ("karno-vereq.jpg", T("İstifadə təlimatı vərəqi", "Instruction leaflet", "Инструкция по применению")),
+                     ("karno-istehsalci.jpg", T("İstehsalçı və sertifikatlar", "Manufacturer and certificates", "Производитель и сертификаты")),
+                     ("karno-tarix.jpg", T("Seriya, istehsal və son istifadə tarixi", "Batch, production and expiry date", "Серия, дата производства и срок годности"))],
+        ),
+        dict(
+            slug="depomer-d3-k2", name="Depomer D3+K2", cat="vitamin",
+            kind=T("BAQM", "Dietary supplement", "БАД"), medical=False,
+            short=T("D3 və K2 vitaminlərinin əlavə mənbəyi — 15 ml damcı məhlul (50 000 BV).",
+                    "An additional source of vitamins D3 and K2 — 15 ml oral drops (50,000 IU).",
+                    "Дополнительный источник витаминов D3 и K2 — капли для приёма внутрь 15 мл (50 000 МЕ)."),
+            form=T("Daxilə qəbul üçün məhlul-damcı", "Oral solution (drops)", "Раствор-капли для приёма внутрь"),
+            pack=T("15 ml şüşə flakon, karton qutu (1 ml = 25 damcı)", "15 ml glass vial, cardboard box (1 ml = 25 drops)", "Стеклянный флакон 15 мл, картонная коробка (1 мл = 25 капель)"),
+            card="depomer-card.jpg", head="depomer-qutu.jpg",
+            comp_title=T("15 ml-in tərkibi (1 ml = 25 damcı)", "Composition per 15 ml (1 ml = 25 drops)", "Состав на 15 мл (1 мл = 25 капель)"),
+            ing=[(("Vitamin D3", "Vitamin D3", "Витамин D3"), "Cholecalciferol", "50 000 BV"),
+                 (("Vitamin K2", "Vitamin K2", "Витамин K2"), "Menaquinone", "200 mkq")],
+            excip=T("Zeytun yağı.", "Olive oil.", "Оливковое масло."),
+            indication=T("D3 və K2 vitaminlərinin əlavə mənbəyi kimi tövsiyə olunan vasitə.",
+                         "Recommended as an additional source of vitamins D3 and K2.",
+                         "Рекомендуется как дополнительный источник витаминов D3 и K2."),
+            dose=T(["2–4 yaş arası uşaqlar: 1 damcı gündə 1 dəfə.", "4–14 yaş arası uşaqlar: 2 damcı gündə 1 dəfə.",
+                    "14 yaşdan yuxarı uşaqlar və böyüklər: 4 damcı gündə 1 dəfə.",
+                    "Doza və yaş həddi yalnız həkim məsləhəti ilə dəyişdirilə bilər.", "İstifadədən əvvəl flakonu çalxalayın."],
+                   ["Children 2–4 years: 1 drop once a day.", "Children 4–14 years: 2 drops once a day.",
+                    "Children over 14 and adults: 4 drops once a day.",
+                    "Dose and age limits may only be changed on a doctor's advice.", "Shake the vial before use."],
+                   ["Дети 2–4 лет: 1 капля 1 раз в день.", "Дети 4–14 лет: 2 капли 1 раз в день.",
+                    "Дети старше 14 лет и взрослые: 4 капли 1 раз в день.",
+                    "Дозировку и возрастные ограничения можно изменять только по рекомендации врача.", "Перед применением флакон взболтать."]),
+            contra=T(["Tərkibindəki hər hansı inqrediyentə qarşı fərdi həssaslıq.", "D hipervitaminozu, hiperkalsiemiya, hiperkalsiuriya.",
+                      "Böyrək çatmazlığı, böyrək daşları xəstəliyi.", "Ağciyər vərəminin aktiv forması."],
+                     ["Individual sensitivity to any ingredient.", "Hypervitaminosis D, hypercalcemia, hypercalciuria.",
+                      "Renal failure, kidney stone disease.", "Active form of pulmonary tuberculosis."],
+                     ["Индивидуальная чувствительность к любому из компонентов.", "Гипервитаминоз D, гиперкальциемия, гиперкальциурия.",
+                      "Почечная недостаточность, мочекаменная болезнь.", "Активная форма туберкулёза лёгких."]),
+            storage=T("25 °C-dən yüksək olmayan temperaturda, quru, işıqdan qorunan və uşaqların əli çatmayan yerdə.",
+                      "At a temperature not above 25 °C, in a dry place protected from light and out of reach of children.",
+                      "При температуре не выше 25 °C, в сухом, защищённом от света и недоступном для детей месте."),
+            shelf=T("3 il", "3 years", "3 года"),
+            mfr=T("FITO LAB MMC (Azərbaycan, Abşeron r-nu, Saray qəs., AZ0121)", "FITO LAB MMC (Azerbaijan, Absheron district, Saray settlement, AZ0121)",
+                  "FITO LAB MMC (Азербайджан, Абшеронский р-н, пос. Сарай, AZ0121)"),
+            brand="POLSHA PHARMA SP.Z.O.O., Jana Pawla str/II 3bf/1 05-091 Zabki",
+            series="DK1012", made="02.2026", exp="02.2029", reg="01-Q-00589",
+            extra=T("AQTA qeydiyyat № MQ-05-001738 · TŞ AZ 1006595881.003-2022", "AFSA reg. no. MQ-05-001738 · TC AZ 1006595881.003-2022", "Рег. № АПБА MQ-05-001738 · ТУ AZ 1006595881.003-2022"),
+            gallery=[("depomer-qutu.jpg", T("Depomer D3+K2 — qutunun ön üzü", "Depomer D3+K2 — front of the box", "Depomer D3+K2 — лицевая сторона коробки")),
+                     ("depomer-terkib.jpg", T("Tərkib və doza (Azərbaycan dilində)", "Composition and dosage (Azerbaijani)", "Состав и дозировка (на азербайджанском)")),
+                     ("depomer-terkib-en.jpg", T("Composition and dosage (English)", "Composition and dosage (English)", "Состав и дозировка (на английском)")),
+                     ("depomer-vereq.jpg", T("İstifadə təlimatı vərəqi", "Instruction leaflet", "Инструкция по применению"))],
+        ),
+        dict(
+            slug="revimer", name="Revimer", cat="immun",
+            kind=T("BAQM", "Dietary supplement", "БАД"), medical=False,
+            short=T("İmmun sistemin fəaliyyətini yaxşılaşdırmaq məqsədilə — 10 flakon × 15 ml məhlul.",
+                    "To support the immune system — 10 vials × 15 ml solution.",
+                    "Для поддержки иммунной системы — 10 флаконов × 15 мл раствора."),
+            form=T("Daxilə qəbul üçün məhlul", "Oral solution", "Раствор для приёма внутрь"),
+            pack=T("15 ml şüşə flakon, No.10, karton qutu", "15 ml glass vial, No.10, cardboard box", "Стеклянный флакон 15 мл, №10, картонная коробка"),
+            card="revimer-card.jpg", head="revimer-qutu.jpg",
+            comp_title=T("15 ml-in tərkibi", "Composition per 15 ml", "Состав на 15 мл"),
+            ing=[(("Arı südü tozu, liofilizə olunmuş", "Royal jelly, lyophilized powder", "Маточное молочко, лиофилизированный порошок"), "Royal jelly lyophilized powder", "200 mq"),
+                 (("Barbados albalısı meyvə ekstraktı tozu", "Barbados cherry fruit extract powder", "Экстракт плодов барбадосской вишни (порошок)"), "Malpighia emarginata", "150 mq"),
+                 (("Qaragilə meyvə konsentratı", "Bilberry fruit concentrate", "Концентрат плодов черники"), "Vaccinium myrtillus", "750 mq"),
+                 (("Qara kəndələş meyvə konsentratı", "Black elderberry fruit concentrate", "Концентрат плодов чёрной бузины"), "Sambucus nigra", "500 mq"),
+                 (("Böyürtkən meyvə ekstraktı", "Blackberry fruit extract", "Экстракт плодов ежевики"), "Rubus fruticosus", "375 mq")],
+            excip=T("Deionizə olunmuş su, ksantan qətranı, limon turşusu, moruq aroması, kalium sorbat, natrium benzoat, sukraloza.",
+                    "Deionized water, xanthan gum, citric acid, raspberry flavour, potassium sorbate, sodium benzoate, sucralose.",
+                    "Деионизированная вода, ксантановая камедь, лимонная кислота, ароматизатор малины, сорбат калия, бензоат натрия, сукралоза."),
+            indication=T("İmmun sistemin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.",
+                         "Recommended to support the function of the immune system.",
+                         "Рекомендуется для улучшения функции иммунной системы."),
+            dose=T(["Böyüklər: 15 ml gündə 1 dəfə.", "Digər hallarda həkim məsləhəti ilə tövsiyə oluna bilər.", "Tövsiyə edilən sutkalıq dozanı keçməyin."],
+                   ["Adults: 15 ml once a day.", "In other cases, may be recommended on a doctor's advice.", "Do not exceed the recommended daily dose."],
+                   ["Взрослым: 15 мл 1 раз в день.", "В остальных случаях — по рекомендации врача.", "Не превышайте рекомендуемую суточную дозу."]),
+            contra=T(["Məhsulun tərkibindəki hər hansı komponentə qarşı həssaslıq."],
+                     ["Sensitivity to any component of the product."],
+                     ["Повышенная чувствительность к любому из компонентов продукта."]),
+            storage=T("25 °C-dən yüksək olmayan temperaturda, quru və uşaqların əli çatmayan yerdə.",
+                      "At a temperature not above 25 °C, in a dry place out of reach of children.",
+                      "При температуре не выше 25 °C, в сухом, недоступном для детей месте."),
+            shelf=T("3 il", "3 years", "3 года"),
+            mfr=T("EVA MED MMC (Azərbaycan Respublikası, Bakı)", "EVA MED MMC (Republic of Azerbaijan, Baku)", "EVA MED MMC (Азербайджанская Республика, Баку)"),
+            brand="EVA MED Medicine",
+            series="116", made="05.01.2026", exp="05.01.2029", reg="", extra="",
+            gallery=[("revimer-qutu.jpg", T("Revimer — qutunun ön üzü", "Revimer — front of the box", "Revimer — лицевая сторона коробки")),
+                     ("revimer-terkib.jpg", T("Tərkib, köməkçi maddələr və doza", "Composition, excipients and dosage", "Состав, вспомогательные вещества и дозировка")),
+                     ("revimer-vereq.jpg", T("İstifadə təlimatı vərəqi (1)", "Instruction leaflet (1)", "Инструкция по применению (1)")),
+                     ("revimer-vereq2.jpg", T("İstifadə təlimatı vərəqi (2)", "Instruction leaflet (2)", "Инструкция по применению (2)")),
+                     ("revimer-istehsalci.jpg", T("İstehsalçı və saxlanma şəraiti", "Manufacturer and storage conditions", "Производитель и условия хранения")),
+                     ("revimer-tarix.jpg", T("İstehsal və son istifadə tarixi", "Production and expiry date", "Дата производства и срок годности"))],
+        ),
+        dict(
+            slug="chondramer", name="Chondramer", cat="oynaq",
+            kind=T("Tibbi vasitə", "Medical device", "Медицинское изделие"), medical=True,
+            short=T("Oynaq və əzələ ağrıları üçün istifadə olunan gel — 75 q.", "A gel for joint and muscle pain — 75 g.", "Гель при болях в суставах и мышцах — 75 г."),
+            form=T("Yerli istifadə üçün gel", "Gel for topical use", "Гель для наружного применения"),
+            pack=T("75 q plastik tubik, karton qutu", "75 g plastic tube, cardboard box", "Пластиковая туба 75 г, картонная коробка"),
+            card="chondramer-card.jpg", head="chondramer-qutu.jpg",
+            comp_title=T("75 q gel-in tərkibi", "Composition per 75 g of gel", "Состав на 75 г геля"),
+            ing=[(("Glukozamin sulfat", "Glucosamine sulphate", "Глюкозамина сульфат"), "Glucosamine sulphate", "800 mq"),
+                 (("Xondroitin sulfat", "Chondroitin sulphate", "Хондроитина сульфат"), "Chondroitin sulphate", "200 mq"),
+                 (("Metilsulfonilmetan", "Methylsulphonylmethane", "Метилсульфонилметан"), "Methylsulphonylmethane", "200 mq"),
+                 (("Bosvelliya ekstraktı", "Boswellia serrata extract", "Экстракт босвеллии пильчатой"), "Boswellia serrata extract", "120 mq"),
+                 (("Evkalipt yağı", "Eucalyptus oil", "Масло эвкалипта"), "Eucalyptus oil", "50 mq"),
+                 (("Kəklikotu yağı", "Thyme oil", "Масло тимьяна"), "Thyme oil", "10 mq"),
+                 (("Mixək yağı", "Clove oil", "Масло гвоздики"), "Clove oil", "5 mq"),
+                 (("Rozmarin yağı", "Rosemary oil", "Масло розмарина"), "Rosemary oil", "12 mq"),
+                 (("Kamfora", "Camphor", "Камфора"), "Camphor", "20 mq"),
+                 (("Mentol", "Menthol", "Ментол"), "Menthol", "150 mq")],
+            excip=T("Aromaterapiya yağları (zəncəfil, lavanda, zirə, qoz, portağal yağı), qliserin, karbomer.",
+                    "Aromatherapy oils (ginger, lavender, cumin, walnut, orange), glycerine, carbomer.",
+                    "Ароматерапевтические масла (имбирь, лаванда, зира, грецкий орех, апельсин), глицерин, карбомер."),
+            indication=T("Oynaq və əzələ ağrıları üçün istifadə olunan tibbi vasitə.", "A medical device used for joint and muscle pain.", "Медицинское изделие, применяемое при болях в суставах и мышцах."),
+            dose=T(["Yerli və xaricdən tətbiq edin. Birbaşa oynaqların və əzələlərin nahiyəsinə masaj edərək sürtün.",
+                    "İstənilən effekti əldə etmək üçün təmizlənmiş dəri nahiyəsinə gündə ən azı 2–3 dəfə yerli olaraq istifadə edilməlidir.",
+                    "Doza və yaş həddi yalnız həkim məsləhəti ilə dəyişdirilə bilər."],
+                   ["For topical external use. Apply directly to the joint and muscle area and rub in with a massage.",
+                    "For the desired effect, apply to cleansed skin at least 2–3 times a day.",
+                    "Dose and age limits may only be changed on a doctor's advice."],
+                   ["Для местного наружного применения. Наносить непосредственно на область суставов и мышц, втирая массажными движениями.",
+                    "Для достижения желаемого эффекта наносить на очищенную кожу не менее 2–3 раз в день.",
+                    "Дозировку и возрастные ограничения можно изменять только по рекомендации врача."]),
+            contra=T(["Tərkibində olan hər hansı komponentə qarşı fərdi həssaslıq."],
+                     ["Individual sensitivity to any component."],
+                     ["Индивидуальная чувствительность к любому из компонентов."]),
+            storage=T("25 °C-dən yüksək olmayan temperaturda, quru, işıq düşməyən və uşaqların əli çatmayan yerdə.",
+                      "At a temperature not above 25 °C, in a dry place away from light and out of reach of children.",
+                      "При температуре не выше 25 °C, в сухом, защищённом от света и недоступном для детей месте."),
+            shelf=T("3 il", "3 years", "3 года"),
+            mfr=T("FITO LAB MMC (Azərbaycan, Abşeron r-nu, Saray qəs., AZ0121)", "FITO LAB MMC (Azerbaijan, Absheron district, Saray settlement, AZ0121)",
+                  "FITO LAB MMC (Азербайджан, Абшеронский р-н, пос. Сарай, AZ0121)"),
+            brand="POLSHA PHARMA SP.Z.O.O., Jana Pawla str/II 3bf/1 05-091 Zabki",
+            series="CM1011", made="02.2025", exp="02.2028", reg="", extra="",
+            gallery=[("chondramer-qutu.jpg", T("Chondramer — qutunun ön üzü", "Chondramer — front of the box", "Chondramer — лицевая сторона коробки")),
+                     ("chondramer-terkib.jpg", T("Tərkib və istifadə qaydası", "Composition and directions", "Состав и способ применения")),
+                     ("chondramer-vereq.jpg", T("İstifadə təlimatı vərəqi", "Instruction leaflet", "Инструкция по применению")),
+                     ("chondramer-istehsalci.jpg", T("İstehsalçı, seriya və tarixlər", "Manufacturer, batch and dates", "Производитель, серия и даты"))],
+        ),
+    ]
+
+
+def cats():
+    return [("all", T("Hamısı", "All", "Все")), ("urek", T("Ürək-damar", "Cardiovascular", "Сердце и сосуды")),
+            ("vitamin", T("Vitaminlər", "Vitamins", "Витамины")), ("immun", T("İmmunitet", "Immunity", "Иммунитет")),
+            ("oynaq", T("Oynaq və əzələ", "Joints & muscles", "Суставы и мышцы"))]
+
+
+def rx():
+    return T("Reseptsiz", "Over the counter", "Без рецепта")
+
 
 # --------------------------------------------------------------------------- layout
-def head(title, desc, extra=""):
-    full = f"{title} | {SITE}" if title != SITE else f"{SITE} — Sağlamlığınız üçün etibarlı ünvan"
+def lang_switch(page):
+    out = []
+    for l in LANGS:
+        target = ("" if l == "az" else l + "/") + page
+        href = ("../" if LANG != "az" else "") + target
+        cur = ' aria-current="true"' if l == LANG else ""
+        out.append(f'<a href="{href}" hreflang="{l}" lang="{l}"{cur}>{LANG_NAMES[l]}</a>')
+    return '<div class="lang" role="group" aria-label="Language">' + "".join(out) + "</div>"
+
+
+def head(title, desc, page, extra=""):
+    home_title = T("Sağlamlığınız üçün etibarlı ünvan", "Your trusted pharmacy for health", "Надёжная аптека для вашего здоровья")
+    full = f"{title} | {SITE}" if title != SITE else f"{SITE} — {home_title}"
+    P = pfx()
+    alts = "".join(f'<link rel="alternate" hreflang="{l}" href="{("../" if LANG != "az" else "")}{("" if l == "az" else l + "/")}{page}">' for l in LANGS)
     return f"""<!DOCTYPE html>
-<html lang="az">
+<html lang="{HTML_LANG[LANG]}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(full)}</title>
 <meta name="description" content="{e(desc)}">
 <meta name="theme-color" content="#0f766e">
-<meta property="og:title" content="{e(full)}"><meta property="og:description" content="{e(desc)}"><meta property="og:type" content="website"><meta property="og:locale" content="az_AZ">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="{e(full)}"><meta property="og:description" content="{e(desc)}"><meta property="og:type" content="website"><meta property="og:locale" content="{OG_LOCALE[LANG]}">
+{alts}
+<link rel="icon" href="{P}favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap&subset=latin-ext" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{P}assets/css/style.css">
 {extra}
 </head>"""
 
@@ -159,174 +315,216 @@ CUR = ' aria-current="page"'
 PHONE_ICON = ICON["phone"].replace("<svg", '<svg width="16" height="16"')
 
 
-def header(active):
-    links = "".join(
-        f'<li><a href="{h}"{CUR if h == active else ""}>{t}</a></li>' for h, t in NAV)
-    return f"""<body>
-<a class="skip" href="#main">Əsas məzmuna keç</a>
+def header(active, page):
+    links = "".join(f'<li><a href="{h}"{CUR if h == active else ""}>{nav_label(t)}</a></li>' for h, t in NAV)
+    call = T("Zəng et", "Call us", "Позвонить")
+    return f"""<body data-close="{T('Bağla', 'Close', 'Закрыть')}" data-prev="{T('Əvvəlki', 'Previous', 'Назад')}" data-next="{T('Növbəti', 'Next', 'Далее')}">
+<a class="skip" href="#main">{T('Əsas məzmuna keç', 'Skip to main content', 'Перейти к содержимому')}</a>
 <header class="site"><div class="container">
-<a class="logo" href="index.html" aria-label="{SITE} — ana səhifə">{LOGO}<span>Kardio <b>Aptek</b></span></a>
-<nav class="main" id="nav" aria-label="Əsas menyu"><ul>{links}</ul></nav>
-<div class="header-cta"><a class="btn btn-primary btn-sm" href="tel:{PHONE_RAW}">{PHONE_ICON} Zəng et</a>
-<button class="menu-btn" aria-label="Menyu" aria-expanded="false" aria-controls="nav" type="button">☰</button></div>
+<a class="logo" href="index.html" aria-label="{SITE}">{LOGO}<span>Kardio <b>Aptek</b></span></a>
+<nav class="main" id="nav" aria-label="{T('Əsas menyu', 'Main menu', 'Главное меню')}"><ul>{links}</ul></nav>
+<div class="header-cta">{lang_switch(page)}<a class="btn btn-primary btn-sm" href="tel:{PHONE_RAW}">{PHONE_ICON} {call}</a>
+<button class="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav" type="button">☰</button></div>
 </div></header>
 <main id="main">"""
 
 
 def footer():
-    fl = "".join(f'<li><a href="{h}">{t}</a></li>' for h, t in NAV)
-    pl = "".join(f'<li><a href="derman-{p["slug"]}.html">{p["name"]}</a></li>' for p in PRODUCTS)
+    fl = "".join(f'<li><a href="{h}">{nav_label(t)}</a></li>' for h, t in NAV)
+    pl = "".join(f'<li><a href="derman-{p["slug"]}.html">{p["name"]}</a></li>' for p in products())
+    P = pfx()
     return f"""</main>
 <footer class="site"><div class="container">
 <div class="cols">
 <div><a class="logo" href="index.html">{LOGO}<span>Kardio Aptek</span></a>
-<p style="margin-top:14px">Ürək sağlamlığı və gündəlik rifahınız üçün keyfiyyətli məhsullar, peşəkar məsləhət və səmimi xidmət.</p></div>
-<div><h4>Səhifələr</h4><ul>{fl}</ul></div>
-<div><h4>Məhsullar</h4><ul>{pl}<li><a href="dermanlar.html">Bütün məhsullar →</a></li></ul></div>
-<div><h4>Əlaqə</h4><ul>
+<p style="margin-top:14px">{T('Ürək sağlamlığı və gündəlik rifahınız üçün keyfiyyətli məhsullar, peşəkar məsləhət və səmimi xidmət.',
+                              'Quality products, professional advice and friendly service for your heart health and everyday wellbeing.',
+                              'Качественные товары, профессиональные консультации и внимательный сервис для здоровья вашего сердца и повседневного благополучия.')}</p></div>
+<div><h4>{T('Səhifələr', 'Pages', 'Страницы')}</h4><ul>{fl}</ul></div>
+<div><h4>{T('Məhsullar', 'Products', 'Товары')}</h4><ul>{pl}<li><a href="dermanlar.html">{T('Bütün məhsullar →', 'All products →', 'Все товары →')}</a></li></ul></div>
+<div><h4>{T('Əlaqə', 'Contact', 'Контакты')}</h4><ul>
 <li>📞 <a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a></li>
 <li>💬 <a href="https://wa.me/{WA}" target="_blank" rel="noopener">WhatsApp</a></li>
-<li>🕘 {HOURS}</li>
-<li>📍 <a href="{MAP_LINK}" target="_blank" rel="noopener">{CITY}</a></li>
-<li><a href="mexfiyyet.html">Məxfilik siyasəti</a></li></ul></div>
+<li>🕘 {hours()}</li>
+<li>📍 <a href="{MAP_LINK}" target="_blank" rel="noopener">{city()}</a></li>
+<li><a href="mexfiyyet.html">{T('Məxfilik siyasəti', 'Privacy policy', 'Политика конфиденциальности')}</a></li></ul></div>
 </div>
-<div class="legal"><span>© {YEAR} Kardio Aptek. Bütün hüquqlar qorunur.</span>
-<span>Saytdakı məlumatlar məlumat xarakterlidir və həkim məsləhətini əvəz etmir.</span></div>
+<div class="legal"><span>© {YEAR} Kardio Aptek. {T('Bütün hüquqlar qorunur.', 'All rights reserved.', 'Все права защищены.')}</span>
+<span>{T('Saytdakı məlumatlar məlumat xarakterlidir və həkim məsləhətini əvəz etmir.',
+         'The information on this site is for reference only and does not replace medical advice.',
+         'Информация на сайте носит справочный характер и не заменяет консультацию врача.')}</span></div>
 </div></footer>
 <div class="fab"><a class="wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="WhatsApp">{ICON['wa']}</a>
-<a class="tel" href="tel:{PHONE_RAW}" aria-label="Zəng et">{ICON['phone']}</a></div>
-<script src="assets/js/main.js" defer></script>
+<a class="tel" href="tel:{PHONE_RAW}" aria-label="{T('Zəng et', 'Call us', 'Позвонить')}">{ICON['phone']}</a></div>
+<script src="{P}assets/js/main.js" defer></script>
 </body></html>"""
 
 
 def page_hero(title, sub, crumbs=None):
     c = ""
     if crumbs:
-        c = '<div class="crumbs"><a href="index.html">Ana səhifə</a> / ' + " / ".join(crumbs) + "</div>"
+        c = f'<div class="crumbs"><a href="index.html">{T("Ana səhifə", "Home", "Главная")}</a> / ' + " / ".join(crumbs) + "</div>"
     return f'<section class="page-hero"><div class="container">{c}<h1>{title}</h1><p>{sub}</p></div></section>'
 
 
 def cta_block():
     return f"""<section class="section"><div class="container"><div class="cta reveal">
-<div><h2>Sualınız var? Bizə zəng edin</h2><p>Əczaçılarımız məhsullar barədə məlumat verməyə hazırdır.</p></div>
+<div><h2>{T('Sualınız var? Bizə zəng edin', 'Have a question? Call us', 'Есть вопрос? Позвоните нам')}</h2><p>{T('Əczaçılarımız məhsullar barədə məlumat verməyə hazırdır.', 'Our pharmacists are happy to tell you more about our products.', 'Наши фармацевты готовы рассказать о продуктах подробнее.')}</p></div>
 <div style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-primary" href="tel:{PHONE_RAW}">📞 {PHONE_SHOW}</a>
 <a class="btn btn-outline" href="https://wa.me/{WA}" target="_blank" rel="noopener">WhatsApp</a></div></div></div></section>"""
 
 
 def product_card(p):
+    P = pfx()
     return f"""<article class="card product reveal" data-cat="{p['cat']}">
-<a class="thumb" href="derman-{p['slug']}.html" aria-label="{p['name']}"><img src="assets/img/{p['card']}" alt="{p['name']} qutusu" loading="lazy"></a>
-<div class="body"><span class="tag {p['kindcls']}">{p['kind']}</span><h3>{p['name']}</h3><p class="sub">{p['short']}</p>
-<div class="actions"><a class="btn btn-green btn-sm" href="derman-{p['slug']}.html">Tərkib və təlimat</a>
-<a class="btn btn-outline btn-sm" href="tel:{PHONE_RAW}">Sifariş</a></div></div></article>"""
+<a class="thumb" href="derman-{p['slug']}.html" aria-label="{p['name']}"><img src="{P}assets/img/{p['card']}" alt="{p['name']}" loading="lazy"></a>
+<div class="body"><span class="tag {'red' if p['medical'] else ''}">{p['kind']}</span><h3>{p['name']}</h3><p class="sub">{p['short']}</p>
+<div class="actions"><a class="btn btn-green btn-sm" href="derman-{p['slug']}.html">{T('Tərkib və təlimat', 'Ingredients & leaflet', 'Состав и инструкция')}</a>
+<a class="btn btn-outline btn-sm" href="tel:{PHONE_RAW}">{T('Sifariş', 'Order', 'Заказать')}</a></div></div></article>"""
 
 
 def write(name, html):
-    (ROOT / name).write_text(html, encoding="utf-8")
-    print("wrote", name)
+    (outdir() / name).write_text(html, encoding="utf-8")
+    print("wrote", LANG, name)
+
+
+def jsonld():
+    return ('<script type="application/ld+json">{"@context":"https://schema.org","@type":"Pharmacy","name":"Kardio Aptek",'
+            f'"telephone":"{PHONE_RAW}","address":{{"@type":"PostalAddress","streetAddress":"S. Mirzəyev küçəsi","addressLocality":"Bakı","postalCode":"AZ1002","addressCountry":"AZ"}},'
+            '"openingHours":"Mo-Su 09:00-22:00","foundingDate":"2024"}</script>')
 
 
 # --------------------------------------------------------------------------- pages
-def jsonld():
-    return f"""<script type="application/ld+json">{{"@context":"https://schema.org","@type":"Pharmacy","name":"Kardio Aptek","telephone":"{PHONE_RAW}","address":{{"@type":"PostalAddress","streetAddress":"S. Mirzəyev küçəsi (Qara Qarayev metrostansiyası yaxınlığı)","addressLocality":"Bakı","postalCode":"AZ1002","addressCountry":"AZ"}},"openingHours":"Mo-Su 09:00-22:00","foundingDate":"{YEAR}"}}</script>"""
-
-
 def home():
-    feat = "".join(product_card(p) for p in PRODUCTS)
-    imgs = "".join(f'<img src="assets/img/{p["card"]}" alt="{p["name"]}" loading="lazy">' for p in PRODUCTS)
+    P = pfx()
+    prods = products()
+    feat = "".join(product_card(p) for p in prods)
+    imgs = "".join(f'<img src="{P}assets/img/{p["card"]}" alt="{p["name"]}" loading="lazy">' for p in prods)
     services = [
-        ("pill", "Məhsul seçimi", "Ürək-damar sağlamlığı, vitaminlər, immunitet və oynaq üçün məhsullar."),
-        ("chat", "Əczaçı məsləhəti", "Tərkib, doza və saxlanma qaydaları barədə aydın izahat."),
-        ("phone", "Telefonla sifariş", f"{PHONE_SHOW} nömrəsinə zəng edərək məhsulu əvvəlcədən ayırdın."),
-        ("shield", "Təhlükəsizlik", "Son istifadə tarixi və seriya nömrəsi yoxlanılmış məhsullar."),
+        ("pill", T("Məhsul seçimi", "Product selection", "Подбор продуктов"),
+         T("Ürək-damar sağlamlığı, vitaminlər, immunitet və oynaq üçün məhsullar.", "Products for heart health, vitamins, immunity and joints.", "Продукты для здоровья сердца, витамины, иммунитет и суставы.")),
+        ("chat", T("Əczaçı məsləhəti", "Pharmacist advice", "Консультация фармацевта"),
+         T("Tərkib, doza və saxlanma qaydaları barədə aydın izahat.", "Clear explanations of composition, dosage and storage.", "Понятные объяснения о составе, дозировке и хранении.")),
+        ("phone", T("Telefonla sifariş", "Order by phone", "Заказ по телефону"),
+         T(f"{PHONE_SHOW} nömrəsinə zəng edərək məhsulu əvvəlcədən ayırdın.", f"Call {PHONE_SHOW} to reserve a product in advance.", f"Позвоните на {PHONE_SHOW}, чтобы заранее зарезервировать товар.")),
+        ("shield", T("Təhlükəsizlik", "Safety", "Безопасность"),
+         T("Son istifadə tarixi və seriya nömrəsi yoxlanılmış məhsullar.", "Products with checked expiry dates and batch numbers.", "Продукты с проверенными сроками годности и номерами серий.")),
     ]
     sv = "".join(f'<div class="card reveal"><div class="icon">{ICON[i]}</div><h3>{t}</h3><p>{d}</p></div>' for i, t, d in services)
-    body = head(SITE, "Kardio Aptek — ürək-damar sağlamlığı, vitaminlər və gündəlik rifah üçün məhsullar, əczaçı məsləhəti. Zəng: " + PHONE_SHOW, jsonld()) + header("index.html") + f"""
+    body = head(SITE, T("Kardio Aptek — ürək-damar sağlamlığı, vitaminlər və gündəlik rifah üçün məhsullar, əczaçı məsləhəti. Zəng: ",
+                        "Kardio Aptek — products for heart health, vitamins and everyday wellbeing, with pharmacist advice. Call: ",
+                        "Kardio Aptek — товары для здоровья сердца, витамины и повседневное благополучие, консультации фармацевта. Телефон: ") + PHONE_SHOW,
+                "index.html", jsonld()) + header("index.html", "index.html") + f"""
 <section class="hero"><div class="container">
-<div><span class="eyebrow">Kardio Aptek · {YEAR}-ci ildən</span>
-<h1>Ürəyiniz üçün <span>etibarlı</span> ünvan</h1>
-<p class="lead">Keyfiyyətli məhsullar, peşəkar əczaçı məsləhəti və səmimi xidmət — sağlamlığınız üçün hər zaman yanınızdayıq.</p>
-<div class="actions"><a class="btn btn-primary" href="dermanlar.html">Məhsullara bax</a><a class="btn btn-outline" href="tel:{PHONE_RAW}">📞 {PHONE_SHOW}</a></div>
-<div class="hero-badges"><span>Tərkibi açıq göstərilir</span><span>Peşəkar məsləhət</span><span>{HOURS}</span></div></div>
-<div class="hero-visual"><div class="stack">{imgs}</div><div class="pulse">{ICON['ecg']} Sağlam ürək — sağlam həyat</div></div>
+<div><span class="eyebrow">Kardio Aptek · {T('2024-cü ildən', 'since 2024', 'с 2024 года')}</span>
+<h1>{T('Ürəyiniz üçün <span>etibarlı</span> ünvan', 'A <span>trusted</span> address for your heart', '<span>Надёжный</span> адрес для вашего сердца')}</h1>
+<p class="lead">{T('Keyfiyyətli məhsullar, peşəkar əczaçı məsləhəti və səmimi xidmət — sağlamlığınız üçün hər zaman yanınızdayıq.',
+                    'Quality products, professional pharmacist advice and friendly service — we are always by your side for your health.',
+                    'Качественные продукты, профессиональные консультации фармацевта и доброжелательный сервис — мы всегда рядом ради вашего здоровья.')}</p>
+<div class="actions"><a class="btn btn-primary" href="dermanlar.html">{T('Məhsullara bax', 'View products', 'Смотреть товары')}</a><a class="btn btn-outline" href="tel:{PHONE_RAW}">📞 {PHONE_SHOW}</a></div>
+<div class="hero-badges"><span>{T('Tərkibi açıq göstərilir', 'Ingredients clearly listed', 'Состав указан открыто')}</span><span>{T('Peşəkar məsləhət', 'Professional advice', 'Профессиональные советы')}</span><span>{hours()}</span></div></div>
+<div class="hero-visual"><div class="stack">{imgs}</div><div class="pulse">{ICON['ecg']} {T('Sağlam ürək — sağlam həyat', 'Healthy heart — healthy life', 'Здоровое сердце — здоровая жизнь')}</div></div>
 </div></section>
 
 <section class="section"><div class="container">
-<div class="section-head center"><span class="eyebrow">Məhsullarımız</span><h2>Seçilmiş məhsullar</h2>
-<p class="lead">Hər məhsulun tərkibi, istifadə qaydası və qablaşdırma şəkilləri ayrıca səhifədə təqdim olunur.</p></div>
+<div class="section-head center"><span class="eyebrow">{T('Məhsullarımız', 'Our products', 'Наши товары')}</span><h2>{T('Seçilmiş məhsullar', 'Featured products', 'Избранные товары')}</h2>
+<p class="lead">{T('Hər məhsulun tərkibi, istifadə qaydası və qablaşdırma şəkilləri ayrıca səhifədə təqdim olunur.',
+                    'Each product has its own page with ingredients, directions and packaging photos.',
+                    'Для каждого продукта есть отдельная страница с составом, способом применения и фотографиями упаковки.')}</p></div>
 <div class="grid g4">{feat}</div>
-<p class="center" style="margin-top:28px"><a class="btn btn-green" href="dermanlar.html">Bütün məhsullar →</a></p>
+<p class="center" style="margin-top:28px"><a class="btn btn-green" href="dermanlar.html">{T('Bütün məhsullar →', 'All products →', 'Все товары →')}</a></p>
 </div></section>
 
 <section class="section alt"><div class="container">
-<div class="section-head center"><span class="eyebrow">Xidmətlər</span><h2>Niyə Kardio Aptek?</h2></div>
+<div class="section-head center"><span class="eyebrow">{T('Xidmətlər', 'Services', 'Услуги')}</span><h2>{T('Niyə Kardio Aptek?', 'Why Kardio Aptek?', 'Почему Kardio Aptek?')}</h2></div>
 <div class="grid g4">{sv}</div></div></section>
 
 <section class="section"><div class="container">
-<div class="section-head center"><span class="eyebrow">Necə işləyir</span><h2>Sifariş üç addımda</h2></div>
+<div class="section-head center"><span class="eyebrow">{T('Necə işləyir', 'How it works', 'Как это работает')}</span><h2>{T('Sifariş üç addımda', 'Order in three steps', 'Заказ в три шага')}</h2></div>
 <div class="steps">
-<div class="step reveal"><h3>Zəng edin</h3><p>{PHONE_SHOW} nömrəsinə zəng edin və ya WhatsApp-da yazın.</p></div>
-<div class="step reveal"><h3>Məsləhət alın</h3><p>Əczaçı tərkib və istifadə qaydası barədə məlumat verəcək.</p></div>
-<div class="step reveal"><h3>Məhsulu götürün</h3><p>Seçdiyiniz məhsulu aptekimizdən əldə edin.</p></div>
+<div class="step reveal"><h3>{T('Zəng edin', 'Call us', 'Позвоните')}</h3><p>{T(f'{PHONE_SHOW} nömrəsinə zəng edin və ya WhatsApp-da yazın.', f'Call {PHONE_SHOW} or message us on WhatsApp.', f'Позвоните на {PHONE_SHOW} или напишите в WhatsApp.')}</p></div>
+<div class="step reveal"><h3>{T('Məsləhət alın', 'Get advice', 'Получите совет')}</h3><p>{T('Əczaçı tərkib və istifadə qaydası barədə məlumat verəcək.', 'A pharmacist will explain the composition and directions for use.', 'Фармацевт расскажет о составе и способе применения.')}</p></div>
+<div class="step reveal"><h3>{T('Məhsulu götürün', 'Pick up your product', 'Заберите товар')}</h3><p>{T('Seçdiyiniz məhsulu aptekimizdən əldə edin.', 'Collect your chosen product at our pharmacy.', 'Заберите выбранный товар в нашей аптеке.')}</p></div>
 </div></div></section>
 
-<section class="section alt"><div class="container"><div class="notice green reveal"><strong>Vacib məlumat.</strong> Saytdakı BAQM (bioloji aktiv qida məhsulu) kateqoriyalı məhsullar dərman vasitəsi deyil, xəstəliklərin müalicəsi məqsədilə istifadə edilməməlidir və normal qidalanmanı əvəz etmir. Hamiləlik, laktasiya, xəstəlik və ya dərman qəbulu zamanı mütləq həkimlə məsləhətləşin.</div></div></section>
+<section class="section alt"><div class="container"><div class="notice green reveal"><strong>{T('Vacib məlumat.', 'Important.', 'Важная информация.')}</strong> {T('Saytdakı BAQM (bioloji aktiv qida məhsulu) kateqoriyalı məhsullar dərman vasitəsi deyil, xəstəliklərin müalicəsi məqsədilə istifadə edilməməlidir və normal qidalanmanı əvəz etmir. Hamiləlik, laktasiya, xəstəlik və ya dərman qəbulu zamanı mütləq həkimlə məsləhətləşin.',
+ 'Products on this site in the dietary supplement (BAQM) category are not medicines, must not be used to treat diseases and do not replace a normal diet. During pregnancy, breastfeeding, illness or when taking medication, always consult a doctor.',
+ 'Продукты категории БАД (биологически активные добавки) на этом сайте не являются лекарственными средствами, не предназначены для лечения заболеваний и не заменяют полноценное питание. При беременности, кормлении грудью, болезни или приёме лекарств обязательно проконсультируйтесь с врачом.')}</div></div></section>
 {cta_block()}""" + footer()
     write("index.html", body)
 
 
 def about():
-    vals = [("heart", "Qayğı", "Hər müştəriyə fərdi yanaşır, sualları səbirlə cavablandırırıq."),
-            ("shield", "Etibar", "Tərkibi açıq göstərilən, tarixi və seriyası yoxlanılmış məhsullar təklif edirik."),
-            ("book", "Məlumatlandırma", "Düzgün və anlaşıqlı məlumat — sağlam seçimin əsasıdır.")]
+    P = pfx()
+    prods = products()
+    vals = [("heart", T("Qayğı", "Care", "Забота"), T("Hər müştəriyə fərdi yanaşır, sualları səbirlə cavablandırırıq.", "We treat each customer individually and answer questions patiently.", "Мы относимся к каждому клиенту индивидуально и терпеливо отвечаем на вопросы.")),
+            ("shield", T("Etibar", "Trust", "Доверие"), T("Tərkibi açıq göstərilən, tarixi və seriyası yoxlanılmış məhsullar təklif edirik.", "We offer products with clearly listed ingredients and checked dates and batches.", "Мы предлагаем продукты с открыто указанным составом и проверенными датами и сериями.")),
+            ("book", T("Məlumatlandırma", "Information", "Информирование"), T("Düzgün və anlaşıqlı məlumat — sağlam seçimin əsasıdır.", "Accurate, understandable information is the basis of a healthy choice.", "Точная и понятная информация — основа осознанного выбора."))]
     v = "".join(f'<div class="card reveal"><div class="icon red">{ICON[i]}</div><h3>{t}</h3><p>{d}</p></div>' for i, t, d in vals)
-    body = head("Haqqımızda", "Kardio Aptek haqqında: missiyamız, dəyərlərimiz və xidmət prinsiplərimiz.") + header("haqqimizda.html") + page_hero(
-        "Haqqımızda", "Kardio Aptek — ürək sağlamlığına və gündəlik rifaha diqqət yetirən müasir apteklərdən biri.", ["Haqqımızda"]) + f"""
+    pillars = [
+        (T("Şəffaflıq", "Transparency", "Прозрачность"), T("Tərkib, istehsalçı, seriya və tarixlər gizlədilmir — hamısı məhsul səhifəsindədir.", "Ingredients, manufacturer, batch and dates are never hidden — all are on the product page.", "Состав, производитель, серия и даты не скрываются — всё указано на странице товара.")),
+        (T("Məsuliyyət", "Responsibility", "Ответственность"), T("BAQM və dərman vasitəsi fərqini aydın bildiririk, həkim məsləhətini əvəz etdiyimizi iddia etmirik.", "We clearly distinguish supplements from medicines and never claim to replace a doctor's advice.", "Мы чётко разделяем БАД и лекарства и не заменяем консультацию врача.")),
+        (T("Əlçatanlıq", "Accessibility", "Доступность"), T("Zəng, WhatsApp və ya birbaşa aptekə gələrək suallarınıza cavab ala bilərsiniz.", "Get answers by phone, WhatsApp or by visiting the pharmacy in person.", "Получите ответы по телефону, в WhatsApp или лично в аптеке.")),
+        (T("Davamlı inkişaf", "Continuous improvement", "Постоянное развитие"), T("Məhsul çeşidini və xidməti müştəri rəyləri əsasında yaxşılaşdırırıq.", "We improve our range and service based on customer feedback.", "Мы улучшаем ассортимент и сервис на основе отзывов клиентов.")),
+    ]
+    pl = "".join(f'<div class="pillar reveal"><b>0{i+1}</b><h3>{a}</h3><p>{b}</p></div>' for i, (a, b) in enumerate(pillars))
+    promises = T(["Son istifadə tarixi keçmiş məhsul satmırıq", "Məhsulu uyğun şəraitdə saxlayırıq", "Dozanı aşmamaq barədə xəbərdarlıq edirik", "Ciddi hallarda həkimə yönləndiririk"],
+                 ["We never sell expired products", "We store products under proper conditions", "We warn against exceeding the dose", "In serious cases we refer you to a doctor"],
+                 ["Мы не продаём товары с истёкшим сроком годности", "Мы храним товары в надлежащих условиях", "Мы предупреждаем о недопустимости превышения дозы", "В серьёзных случаях направляем к врачу"])
+    pr = "".join(f"<li>{x}</li>" for x in promises)
+    body = head(T("Haqqımızda", "About us", "О нас"), T("Kardio Aptek haqqında: missiyamız, dəyərlərimiz və xidmət prinsiplərimiz.", "About Kardio Aptek: our mission, values and service principles.", "О Kardio Aptek: наша миссия, ценности и принципы обслуживания."), "haqqimizda.html") + header("haqqimizda.html", "haqqimizda.html") + page_hero(
+        T("Haqqımızda", "About us", "О нас"), T("Kardio Aptek — ürək sağlamlığına və gündəlik rifaha diqqət yetirən müasir apteklərdən biri.", "Kardio Aptek is a modern pharmacy focused on heart health and everyday wellbeing.", "Kardio Aptek — современная аптека, уделяющая внимание здоровью сердца и повседневному благополучию."), [T("Haqqımızda", "About us", "О нас")]) + f"""
 <section class="section"><div class="container grid g2" style="align-items:center;gap:44px">
-<div class="reveal"><span class="eyebrow">Biz kimik</span><h2>Ürək sağlamlığına diqqət edən müasir aptek</h2>
-<p>Kardio Aptek {YEAR}-cü ildə Bakıda, Qara Qarayev metrostansiyasının yaxınlığında fəaliyyətə başlayıb. Məqsədimiz hər müştəriyə rahat, etibarlı və anlaşıqlı xidmət göstərməkdir.</p>
-<p>Təklif etdiyimiz hər məhsul üçün tərkib, doza, istehsalçı və son istifadə tarixi açıq şəkildə göstərilir. Saytdakı məhsul səhifələrində qablaşdırma şəkilləri və tərkib cədvəli də yerləşdirilib ki, qərarı məlumatlı şəkildə verəsiniz.</p>
-<a class="btn btn-green" href="dermanlar.html">Məhsullarımıza baxın</a></div>
+<div class="reveal"><span class="eyebrow">{T('Biz kimik', 'Who we are', 'Кто мы')}</span><h2>{T('Ürək sağlamlığına diqqət edən müasir aptek', 'A modern pharmacy that cares about heart health', 'Современная аптека, заботящаяся о здоровье сердца')}</h2>
+<p>{T(f'Kardio Aptek {YEAR}-cü ildə Bakıda, Qara Qarayev metrostansiyasının yaxınlığında fəaliyyətə başlayıb. Məqsədimiz hər müştəriyə rahat, etibarlı və anlaşıqlı xidmət göstərməkdir.',
+      f'Kardio Aptek opened in {YEAR} in Baku, near Qara Qarayev metro station. Our goal is to give every customer convenient, reliable and clear service.',
+      f'Kardio Aptek открылась в {YEAR} году в Баку, рядом со станцией метро «Гара Гараев». Наша цель — удобное, надёжное и понятное обслуживание каждого клиента.')}</p>
+<p>{T('Təklif etdiyimiz hər məhsul üçün tərkib, doza, istehsalçı və son istifadə tarixi açıq şəkildə göstərilir. Saytdakı məhsul səhifələrində qablaşdırma şəkilləri və tərkib cədvəli də yerləşdirilib ki, qərarı məlumatlı şəkildə verəsiniz.',
+      'For every product we offer, the composition, dosage, manufacturer and expiry date are clearly shown. Product pages on this site also include packaging photos and an ingredient table so you can decide with confidence.',
+      'Для каждого продукта открыто указаны состав, дозировка, производитель и срок годности. На страницах товаров размещены фотографии упаковки и таблица состава, чтобы вы могли принять взвешенное решение.')}</p>
+<a class="btn btn-green" href="dermanlar.html">{T('Məhsullarımıza baxın', 'See our products', 'Смотреть товары')}</a></div>
 <div class="reveal"><div class="card" style="padding:12px;background:var(--green-soft)"><div class="grid g2" style="gap:10px">
-{"".join(f'<img src="assets/img/{p["card"]}" alt="{p["name"]}" style="background:#fff;border-radius:12px;aspect-ratio:1;object-fit:contain;padding:6px" loading="lazy">' for p in PRODUCTS)}
+{"".join(f'<img src="{P}assets/img/{p["card"]}" alt="{p["name"]}" style="background:#fff;border-radius:12px;aspect-ratio:1;object-fit:contain;padding:6px" loading="lazy">' for p in prods)}
 </div></div></div></div></section>
 
-<section class="section alt"><div class="container"><div class="section-head center"><span class="eyebrow">Dəyərlərimiz</span><h2>Nəyə əsaslanırıq</h2></div>
+<section class="section alt"><div class="container"><div class="section-head center"><span class="eyebrow">{T('Dəyərlərimiz', 'Our values', 'Наши ценности')}</span><h2>{T('Nəyə əsaslanırıq', 'What we stand for', 'На чём мы стоим')}</h2></div>
 <div class="grid g3">{v}</div></div></section>
 
 <section class="section"><div class="container">
-<div class="section-head center"><span class="eyebrow">Missiya və baxış</span><h2>Hara getdiyimizi bilirik</h2></div>
+<div class="section-head center"><span class="eyebrow">{T('Missiya və baxış', 'Mission & vision', 'Миссия и видение')}</span><h2>{T('Hara getdiyimizi bilirik', 'We know where we are heading', 'Мы знаем, куда идём')}</h2></div>
 <div class="mv">
-<div class="mv-card mission reveal"><span class="mv-ico">{ICON['heart']}</span><h3>Missiyamız</h3>
-<p>Hər kəsin sağlamlıq barədə düzgün məlumata və keyfiyyətli məhsullara rahat çıxışını təmin etmək; müştərini məlumatlı seçim etməyə yönəltmək.</p></div>
-<div class="mv-card vision reveal"><span class="mv-ico">{ICON['ecg']}</span><h3>Baxışımız</h3>
-<p>Ürək-damar sağlamlığı və gündəlik rifah sahəsində Bakıda ən çox güvənilən apteklərdən birinə çevrilmək.</p></div></div>
-
-<div class="pillars">
-<div class="pillar reveal"><b>01</b><h3>Şəffaflıq</h3><p>Tərkib, istehsalçı, seriya və tarixlər gizlədilmir — hamısı məhsul səhifəsindədir.</p></div>
-<div class="pillar reveal"><b>02</b><h3>Məsuliyyət</h3><p>BAQM və dərman vasitəsi fərqini aydın bildiririk, həkim məsləhətini əvəz etdiyimizi iddia etmirik.</p></div>
-<div class="pillar reveal"><b>03</b><h3>Əlçatanlıq</h3><p>Zəng, WhatsApp və ya birbaşa aptekə gələrək suallarınıza cavab ala bilərsiniz.</p></div>
-<div class="pillar reveal"><b>04</b><h3>Davamlı inkişaf</h3><p>Məhsul çeşidini və xidməti müştəri rəyləri əsasında yaxşılaşdırırıq.</p></div>
-</div>
-
-<div class="promise reveal"><div><h3>Bizim sözümüz</h3><p>Hər müştəriyə eyni hörmət, hər sualına dürüst cavab.</p></div>
-<ul><li>Son istifadə tarixi keçmiş məhsul satmırıq</li><li>Məhsulu uyğun şəraitdə saxlayırıq</li><li>Dozanı aşmamaq barədə xəbərdarlıq edirik</li><li>Ciddi hallarda həkimə yönləndiririk</li></ul></div>
+<div class="mv-card mission reveal"><span class="mv-ico">{ICON['heart']}</span><h3>{T('Missiyamız', 'Our mission', 'Наша миссия')}</h3>
+<p>{T('Hər kəsin sağlamlıq barədə düzgün məlumata və keyfiyyətli məhsullara rahat çıxışını təmin etmək; müştərini məlumatlı seçim etməyə yönəltmək.',
+     'To give everyone easy access to accurate health information and quality products, and to help customers make informed choices.',
+     'Обеспечить каждому удобный доступ к достоверной информации о здоровье и качественным продуктам, помогая делать осознанный выбор.')}</p></div>
+<div class="mv-card vision reveal"><span class="mv-ico">{ICON['ecg']}</span><h3>{T('Baxışımız', 'Our vision', 'Наше видение')}</h3>
+<p>{T('Ürək-damar sağlamlığı və gündəlik rifah sahəsində Bakıda ən çox güvənilən apteklərdən birinə çevrilmək.',
+     'To become one of the most trusted pharmacies in Baku for cardiovascular health and everyday wellbeing.',
+     'Стать одной из самых надёжных аптек Баку в области здоровья сердца и сосудов и повседневного благополучия.')}</p></div></div>
+<div class="pillars">{pl}</div>
+<div class="promise reveal"><div><h3>{T('Bizim sözümüz', 'Our promise', 'Наше обещание')}</h3><p>{T('Hər müştəriyə eyni hörmət, hər sualına dürüst cavab.', 'The same respect for every customer, an honest answer to every question.', 'Одинаковое уважение к каждому клиенту и честный ответ на каждый вопрос.')}</p></div>
+<ul>{pr}</ul></div>
 </div></section>
 {cta_block()}""" + footer()
     write("haqqimizda.html", body)
 
 
 def catalog():
-    chips = "".join(f'<button class="chip{" active" if k == "all" else ""}" data-filter="{k}" type="button">{t}</button>' for k, t in CATS)
-    cards = "".join(product_card(p) for p in PRODUCTS)
-    body = head("Dərmanlar", "Kardio Aptek məhsulları: Karno Mer, Depomer D3+K2, Revimer, Chondramer — tərkib, doza və qablaşdırma şəkilləri.") + header("dermanlar.html") + page_hero(
-        "Dərmanlar və sağlamlıq məhsulları", "Hər məhsulun tərkibi, istifadə qaydası və qablaşdırma şəkilləri ilə tanış olun.", ["Dərmanlar"]) + f"""
+    chips = "".join(f'<button class="chip{" active" if k == "all" else ""}" data-filter="{k}" type="button">{t}</button>' for k, t in cats())
+    cards = "".join(product_card(p) for p in products())
+    ttl = T("Dərmanlar və sağlamlıq məhsulları", "Medicines & health products", "Препараты и товары для здоровья")
+    body = head(T("Dərmanlar", "Medicines", "Препараты"), T("Kardio Aptek məhsulları: Karno Mer, Depomer D3+K2, Revimer, Chondramer — tərkib, doza və qablaşdırma şəkilləri.",
+                                                         "Kardio Aptek products: Karno Mer, Depomer D3+K2, Revimer, Chondramer — ingredients, dosage and packaging photos.",
+                                                         "Товары Kardio Aptek: Karno Mer, Depomer D3+K2, Revimer, Chondramer — состав, дозировка и фотографии упаковки."), "dermanlar.html") + header("dermanlar.html", "dermanlar.html") + page_hero(
+        ttl, T("Hər məhsulun tərkibi, istifadə qaydası və qablaşdırma şəkilləri ilə tanış olun.", "Explore each product's ingredients, directions and packaging photos.", "Ознакомьтесь с составом, способом применения и фото упаковки каждого товара."), [T("Dərmanlar", "Medicines", "Препараты")]) + f"""
 <section class="section"><div class="container">
-<div class="notice reveal" style="margin-bottom:28px"><strong>Diqqət:</strong> Aşağıdakı məhsullar BAQM (bioloji aktiv qida məhsulu) və ya tibbi vasitədir — <strong>dərman vasitəsi deyil</strong>. Xəstəliklərin müalicəsi məqsədilə istifadə edilməməlidir. İstifadədən əvvəl həkimlə məsləhətləşin.</div>
-<div class="toolbar"><div class="chips" role="group" aria-label="Kateqoriya">{chips}</div>
-<input id="q" class="search" type="search" placeholder="Məhsul axtar…" aria-label="Məhsul axtar"></div>
+<div class="notice reveal" style="margin-bottom:28px"><strong>{T('Diqqət:', 'Please note:', 'Внимание:')}</strong> {T('Aşağıdakı məhsullar BAQM (bioloji aktiv qida məhsulu) və ya tibbi vasitədir — <strong>dərman vasitəsi deyil</strong>. Xəstəliklərin müalicəsi məqsədilə istifadə edilməməlidir. İstifadədən əvvəl həkimlə məsləhətləşin.',
+ 'The products below are dietary supplements (BAQM) or a medical device — <strong>not medicines</strong>. They must not be used to treat diseases. Consult a doctor before use.',
+ 'Представленные ниже товары являются БАД или медицинским изделием — <strong>не лекарственными средствами</strong>. Они не предназначены для лечения заболеваний. Перед применением проконсультируйтесь с врачом.')}</div>
+<div class="toolbar"><div class="chips" role="group">{chips}</div>
+<input id="q" class="search" type="search" placeholder="{T('Məhsul axtar…', 'Search products…', 'Поиск товаров…')}" aria-label="{T('Məhsul axtar', 'Search products', 'Поиск товаров')}"></div>
 <div class="grid g4">{cards}</div>
-<p class="empty">Axtarışa uyğun məhsul tapılmadı. Zəng edin: <a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a></p>
+<p class="empty">{T('Axtarışa uyğun məhsul tapılmadı. Zəng edin:', 'No matching products found. Call us:', 'Ничего не найдено. Позвоните нам:')} <a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a></p>
 </div></section>{cta_block()}""" + footer()
     write("dermanlar.html", body)
 
@@ -336,159 +534,233 @@ def li(items):
 
 
 def detail(p):
-    rows = "".join(
-        f"<tr><td>{e(a)}<small>{e(b)}</small></td><td>{e(c)}</td></tr>" for a, b, c in p["ing"])
+    P = pfx()
+    # small line: for az/ru show the English name; for en show the Latin/INCI name when different
+    rows = ""
+    for nm, sm, c in p["ing"]:
+        main = nm[LANGS.index(LANG)]
+        small = nm[1] if LANG != "en" else (sm if sm.lower() != main.lower() else "")
+        small_html = f"<small>{e(small)}</small>" if small and small != main else ""
+        rows += f"<tr><td>{e(main)}{small_html}</td><td>{e(units(c))}</td></tr>"
     gal = "".join(
-        f'<button class="shot" type="button" data-full="assets/img/{f}" data-cap="{e(c)}"><img src="assets/img/{f}" alt="{e(c)}" loading="lazy"><span>{e(c)}</span></button>'
+        f'<button class="shot" type="button" data-full="{P}assets/img/{f}" data-cap="{e(c)}"><img src="{P}assets/img/{f}" alt="{e(c)}" loading="lazy"><span>{e(c)}</span></button>'
         for f, c in p["gallery"])
     ids = []
     if p["reg"]:
-        ids.append(f"Qeydiyyat №: {p['reg']}")
+        ids.append(f"{T('Qeydiyyat №', 'Registration no.', 'Рег. №')}: {p['reg']}")
     if p["extra"]:
         ids.append(p["extra"])
     ids_html = f'<li>{e(" · ".join(ids))}</li>' if ids else ""
-    others = "".join(product_card(o) for o in PRODUCTS if o["slug"] != p["slug"])
-    body = head(p["name"], f"{p['name']} — {p['short']} Tərkib, doza və əks göstərişlər.") + header("dermanlar.html") + page_hero(
-        p["name"], p["short"], ['<a href="dermanlar.html">Dərmanlar</a>', p["name"]]) + f"""
+    others = "".join(product_card(o) for o in products() if o["slug"] != p["slug"])
+    warn = (T("Tibbi vasitədir, dərman vasitəsi deyil.", "A medical device, not a medicine.", "Медицинское изделие, не лекарственное средство.") if p["medical"]
+            else T("Dərman vasitəsi deyil. Bioloji aktiv qida məhsuludur.", "Not a medicine. A dietary supplement.", "Не является лекарственным средством. Биологически активная добавка."))
+    crumb = f'<a href="dermanlar.html">{T("Dərmanlar", "Medicines", "Препараты")}</a>'
+    body = head(p["name"], f"{p['name']} — {p['short']} " + T("Tərkib, doza və əks göstərişlər.", "Ingredients, dosage and contraindications.", "Состав, дозировка и противопоказания."),
+                f"derman-{p['slug']}.html") + header("dermanlar.html", f"derman-{p['slug']}.html") + page_hero(p["name"], p["short"], [crumb, p["name"]]) + f"""
 <section class="section"><div class="container">
 <div class="detail">
-<div class="reveal"><div class="main-img"><img src="assets/img/{p['head']}" alt="{p['name']} qutusu"></div>
-<p style="margin-top:14px"><a class="btn btn-primary" href="tel:{PHONE_RAW}">📞 Sifariş: {PHONE_SHOW}</a></p></div>
+<div class="reveal"><div class="main-img"><img src="{P}assets/img/{p['head']}" alt="{p['name']}"></div>
+<p style="margin-top:14px"><a class="btn btn-primary" href="tel:{PHONE_RAW}">📞 {T('Sifariş', 'Order', 'Заказ')}: {PHONE_SHOW}</a></p></div>
 <div class="reveal">
-<span class="tag {p['kindcls']}">{p['kind']}</span>
+<span class="tag {'red' if p['medical'] else ''}">{p['kind']}</span>
 <h2 style="margin-top:10px">{p['name']}</h2>
 <p class="lead" style="font-size:1rem">{p['indication']}</p>
 <div class="facts">
-<div class="fact"><small>Buraxılış forması</small><b>{p['form']}</b></div>
-<div class="fact"><small>Qablaşdırma</small><b>{p['pack']}</b></div>
-<div class="fact"><small>Aptekdən buraxılma</small><b>{p['rx']}</b></div>
-<div class="fact"><small>Yararlılıq müddəti</small><b>{p['shelf'].split('.')[0]}</b></div></div>
+<div class="fact"><small>{T('Buraxılış forması', 'Dosage form', 'Форма выпуска')}</small><b>{p['form']}</b></div>
+<div class="fact"><small>{T('Qablaşdırma', 'Packaging', 'Упаковка')}</small><b>{p['pack']}</b></div>
+<div class="fact"><small>{T('Aptekdən buraxılma', 'Pharmacy dispensing', 'Условия отпуска')}</small><b>{rx()}</b></div>
+<div class="fact"><small>{T('Yararlılıq müddəti', 'Shelf life', 'Срок годности')}</small><b>{p['shelf']}</b></div></div>
 
-<div class="info-block"><h3>Tərkibi</h3>
-<table class="ing"><thead><tr><th>Maddə</th><th style="text-align:right">Miqdar</th></tr></thead>
-<caption style="caption-side:top;padding-bottom:8px">{p['comp_title']}</caption><tbody>{rows}</tbody></table></div>
-<div class="info-block"><h3>Köməkçi maddələr</h3><p>{p['excip']}</p></div>
-<div class="info-block"><h3>İstifadə qaydası və doza</h3>{li(p['dose'])}</div>
-<div class="info-block"><h3>Əks göstərişlər</h3>{li(p['contra'])}</div>
-<div class="info-block"><h3>Saxlanma şəraiti</h3><p>{p['storage']}</p></div>
-<div class="info-block"><h3>İstehsalçı və məlumatlar</h3><ul>
-<li><b>İstehsalçı:</b> {e(p['mfr'])}</li><li><b>Ticarət nişanı:</b> {e(p['brand'])}</li>
-<li><b>Seriya:</b> {p['series']} · <b>İstehsal:</b> {p['made']} · <b>Son istifadə:</b> {p['exp']}</li>{ids_html}</ul></div>
+<div class="info-block"><h3>{T('Tərkibi', 'Ingredients', 'Состав')}</h3>
+<table class="ing"><caption style="caption-side:top;padding-bottom:8px">{p['comp_title']}</caption><thead><tr><th>{T('Maddə', 'Ingredient', 'Вещество')}</th><th style="text-align:right">{T('Miqdar', 'Amount', 'Количество')}</th></tr></thead><tbody>{rows}</tbody></table></div>
+<div class="info-block"><h3>{T('Köməkçi maddələr', 'Excipients', 'Вспомогательные вещества')}</h3><p>{p['excip']}</p></div>
+<div class="info-block"><h3>{T('İstifadə qaydası və doza', 'Directions and dosage', 'Способ применения и дозировка')}</h3>{li(p['dose'])}</div>
+<div class="info-block"><h3>{T('Əks göstərişlər', 'Contraindications', 'Противопоказания')}</h3>{li(p['contra'])}</div>
+<div class="info-block"><h3>{T('Saxlanma şəraiti', 'Storage conditions', 'Условия хранения')}</h3><p>{p['storage']}</p></div>
+<div class="info-block"><h3>{T('İstehsalçı və məlumatlar', 'Manufacturer & details', 'Производитель и данные')}</h3><ul>
+<li><b>{T('İstehsalçı', 'Manufacturer', 'Производитель')}:</b> {e(p['mfr'])}</li><li><b>{T('Ticarət nişanı', 'Trademark', 'Торговая марка')}:</b> {e(p['brand'])}</li>
+<li><b>{T('Seriya', 'Batch', 'Серия')}:</b> {p['series']} · <b>{T('İstehsal', 'Produced', 'Произведено')}:</b> {p['made']} · <b>{T('Son istifadə', 'Expires', 'Годен до')}:</b> {p['exp']}</li>{ids_html}</ul></div>
 
-<div class="notice" style="margin-top:26px"><strong>{"Tibbi vasitədir, dərman vasitəsi deyil." if p['kind']!='BAQM' else "Dərman vasitəsi deyil. Bioloji aktiv qida məhsuludur."}</strong>
-Tövsiyə edilən sutkalıq dozanı keçməyin. Uşaqların əli çatmayan yerdə saxlayın. Hamiləlik və laktasiya dövründə, xəstəlik və ya dərman istifadəsi zamanı həkimlə məsləhətləşin.</div>
+<div class="notice" style="margin-top:26px"><strong>{warn}</strong>
+{T('Tövsiyə edilən sutkalıq dozanı keçməyin. Uşaqların əli çatmayan yerdə saxlayın. Hamiləlik və laktasiya dövründə, xəstəlik və ya dərman istifadəsi zamanı həkimlə məsləhətləşin.',
+   'Do not exceed the recommended daily dose. Keep out of reach of children. During pregnancy and breastfeeding, illness or while taking medication, consult a doctor.',
+   'Не превышайте рекомендуемую суточную дозу. Храните в недоступном для детей месте. При беременности и кормлении грудью, болезни или приёме лекарств проконсультируйтесь с врачом.')}</div>
 </div></div></div></section>
 
-<section class="section alt"><div class="container"><div class="section-head"><span class="eyebrow">Qablaşdırma</span><h2>{p['name']} — qablaşdırma şəkilləri</h2>
-<p class="lead">Şəkli böyütmək üçün üzərinə klikləyin.</p></div><div class="gallery">{gal}</div></div></section>
+<section class="section alt"><div class="container"><div class="section-head"><span class="eyebrow">{T('Qablaşdırma', 'Packaging', 'Упаковка')}</span><h2>{p['name']} — {T('qablaşdırma şəkilləri', 'packaging photos', 'фотографии упаковки')}</h2>
+<p class="lead">{T('Şəkli böyütmək üçün üzərinə klikləyin.', 'Click a photo to enlarge it.', 'Нажмите на фото, чтобы увеличить.')}</p></div><div class="gallery">{gal}</div></div></section>
 
-<section class="section"><div class="container"><div class="section-head"><h2>Digər məhsullar</h2></div><div class="grid g3">{others}</div></div></section>""" + footer()
+<section class="section"><div class="container"><div class="section-head"><h2>{T('Digər məhsullar', 'Other products', 'Другие товары')}</h2></div><div class="grid g3">{others}</div></div></section>""" + footer()
     write(f"derman-{p['slug']}.html", body)
 
 
 def services():
     items = [
-        ("pill", "Məhsul satışı", "Ürək-damar sağlamlığı, vitamin, immunitet və oynaq üçün məhsullar."),
-        ("chat", "Əczaçı məsləhəti", "Məhsulun tərkibi, dozası, saxlanması və əks göstərişləri barədə məlumat."),
-        ("phone", "Telefonla sifariş", f"{PHONE_SHOW} nömrəsinə zəng və ya WhatsApp vasitəsilə məhsulun mövcudluğunu öyrənin."),
-        ("clock", "Tarixlərin yoxlanması", "Təqdim olunan məhsulların seriya və son istifadə tarixi diqqətlə yoxlanılır."),
-        ("ecg", "Ürək sağlamlığı məlumatı", "Həyat tərzi və qidalanma üzrə ümumi məlumat materialları."),
-        ("drop", "Düzgün saxlama tövsiyələri", "Məhsulların temperatur və rütubət şərtlərinə uyğun saxlanması barədə təlimat."),
+        ("pill", T("Məhsul satışı", "Product sales", "Продажа товаров"), T("Ürək-damar sağlamlığı, vitamin, immunitet və oynaq üçün məhsullar.", "Products for heart health, vitamins, immunity and joints.", "Продукты для здоровья сердца, витамины, иммунитет и суставы.")),
+        ("chat", T("Əczaçı məsləhəti", "Pharmacist advice", "Консультация фармацевта"), T("Məhsulun tərkibi, dozası, saxlanması və əks göstərişləri barədə məlumat.", "Information on composition, dosage, storage and contraindications.", "Информация о составе, дозировке, хранении и противопоказаниях.")),
+        ("phone", T("Telefonla sifariş", "Order by phone", "Заказ по телефону"), T(f"{PHONE_SHOW} nömrəsinə zəng və ya WhatsApp vasitəsilə məhsulun mövcudluğunu öyrənin.", f"Check availability by calling {PHONE_SHOW} or writing on WhatsApp.", f"Узнайте о наличии, позвонив на {PHONE_SHOW} или написав в WhatsApp.")),
+        ("clock", T("Tarixlərin yoxlanması", "Date checks", "Проверка сроков"), T("Təqdim olunan məhsulların seriya və son istifadə tarixi diqqətlə yoxlanılır.", "Batch numbers and expiry dates of our products are carefully checked.", "Номера серий и сроки годности наших товаров тщательно проверяются.")),
+        ("ecg", T("Ürək sağlamlığı məlumatı", "Heart-health information", "Информация о здоровье сердца"), T("Həyat tərzi və qidalanma üzrə ümumi məlumat materialları.", "General information on lifestyle and nutrition.", "Общие информационные материалы об образе жизни и питании.")),
+        ("drop", T("Düzgün saxlama tövsiyələri", "Storage guidance", "Рекомендации по хранению"), T("Məhsulların temperatur və rütubət şərtlərinə uyğun saxlanması barədə təlimat.", "Guidance on storing products according to temperature and humidity requirements.", "Рекомендации по хранению товаров с учётом температуры и влажности.")),
     ]
     cards = "".join(f'<div class="card reveal"><div class="icon">{ICON[i]}</div><h3>{t}</h3><p>{d}</p></div>' for i, t, d in items)
-    body = head("Xidmətlər", "Kardio Aptek xidmətləri: məhsul satışı, əczaçı məsləhəti, telefonla sifariş.") + header("xidmetler.html") + page_hero(
-        "Xidmətlərimiz", "Sizə rahat və etibarlı xidmət göstərmək üçün buradayıq.", ["Xidmətlər"]) + f"""
+    ttl = T("Xidmətlər", "Services", "Услуги")
+    body = head(ttl, T("Kardio Aptek xidmətləri: məhsul satışı, əczaçı məsləhəti, telefonla sifariş.", "Kardio Aptek services: product sales, pharmacist advice, phone orders.", "Услуги Kardio Aptek: продажа товаров, консультации фармацевта, заказ по телефону."), "xidmetler.html") + header("xidmetler.html", "xidmetler.html") + page_hero(
+        T("Xidmətlərimiz", "Our services", "Наши услуги"), T("Sizə rahat və etibarlı xidmət göstərmək üçün buradayıq.", "We are here to give you convenient and reliable service.", "Мы здесь, чтобы предложить вам удобный и надёжный сервис."), [ttl]) + f"""
 <section class="section"><div class="container"><div class="grid g3">{cards}</div></div></section>
-<section class="section alt"><div class="container"><div class="notice green reveal"><strong>Qeyd:</strong> Əczaçı məsləhəti məlumat xarakterlidir və həkimin diaqnoz və müalicəsini əvəz etmir. Ciddi şikayətlər zamanı həkimə müraciət edin.</div></div></section>
+<section class="section alt"><div class="container"><div class="notice green reveal"><strong>{T('Qeyd:', 'Note:', 'Примечание:')}</strong> {T('Əczaçı məsləhəti məlumat xarakterlidir və həkimin diaqnoz və müalicəsini əvəz etmir. Ciddi şikayətlər zamanı həkimə müraciət edin.',
+ "A pharmacist's advice is informational and does not replace a doctor's diagnosis or treatment. See a doctor for serious complaints.",
+ 'Консультация фармацевта носит информационный характер и не заменяет диагностику и лечение у врача. При серьёзных жалобах обратитесь к врачу.')}</div></div></section>
 {cta_block()}""" + footer()
     write("xidmetler.html", body)
 
 
 def tips():
-    tips = [
-        ("Duz və doymuş yağları azaldın", "Gündəlik duz qəbulunu məhdudlaşdırmaq qan təzyiqinə nəzarət üçün vacibdir. Tərəvəz, meyvə, bütövdənli məhsullar və balıq daha yaxşı seçimdir."),
-        ("Hərəkət edin", "Həftədə ən azı 150 dəqiqə orta intensivlikli fiziki fəaliyyət (sürətli yeriş, üzgüçülük) ürək-damar sağlamlığına dəstək olur."),
-        ("Siqaretdən imtina edin", "Siqaret ürək-damar xəstəlikləri üçün əsas risk amillərindən biridir. İmtina etmək üçün həkimdən kömək ala bilərsiniz."),
-        ("Təzyiqi və çəkini izləyin", "Qan təzyiqini müntəzəm ölçün, normal bədən çəkisini qoruyun və həkim yoxlamalarını buraxmayın."),
-        ("Keyfiyyətli yuxu və stress idarəsi", "Gündə 7–8 saat yuxu və stressi azaldan vərdişlər (gəzinti, nəfəs məşqləri) ümumi sağlamlığa müsbət təsir edir."),
-        ("Vitamin və əlavələri düşünərək seçin", "Vitamin və BAQM-lar tarazlı qidalanmanı əvəz etmir. D vitamini kimi məhsulları qəbul etməzdən əvvəl dozanı həkimlə razılaşdırın."),
+    tp = [
+        (T("Duz və doymuş yağları azaldın", "Cut down on salt and saturated fat", "Сократите соль и насыщенные жиры"),
+         T("Gündəlik duz qəbulunu məhdudlaşdırmaq qan təzyiqinə nəzarət üçün vacibdir. Tərəvəz, meyvə, bütövdənli məhsullar və balıq daha yaxşı seçimdir.",
+           "Limiting daily salt intake helps control blood pressure. Vegetables, fruit, whole grains and fish are better choices.",
+           "Ограничение соли помогает контролировать артериальное давление. Лучше выбирать овощи, фрукты, цельнозерновые продукты и рыбу.")),
+        (T("Hərəkət edin", "Stay active", "Двигайтесь"),
+         T("Həftədə ən azı 150 dəqiqə orta intensivlikli fiziki fəaliyyət (sürətli yeriş, üzgüçülük) ürək-damar sağlamlığına dəstək olur.",
+           "At least 150 minutes of moderate physical activity a week (brisk walking, swimming) supports cardiovascular health.",
+           "Не менее 150 минут умеренной физической активности в неделю (быстрая ходьба, плавание) поддерживает здоровье сердца и сосудов.")),
+        (T("Siqaretdən imtina edin", "Quit smoking", "Откажитесь от курения"),
+         T("Siqaret ürək-damar xəstəlikləri üçün əsas risk amillərindən biridir. İmtina etmək üçün həkimdən kömək ala bilərsiniz.",
+           "Smoking is one of the main risk factors for cardiovascular disease. A doctor can help you quit.",
+           "Курение — один из главных факторов риска сердечно-сосудистых заболеваний. Врач поможет вам бросить.")),
+        (T("Təzyiqi və çəkini izləyin", "Monitor blood pressure and weight", "Следите за давлением и весом"),
+         T("Qan təzyiqini müntəzəm ölçün, normal bədən çəkisini qoruyun və həkim yoxlamalarını buraxmayın.",
+           "Measure blood pressure regularly, maintain a healthy weight and keep up with check-ups.",
+           "Регулярно измеряйте давление, поддерживайте нормальный вес и не пропускайте плановые осмотры.")),
+        (T("Keyfiyyətli yuxu və stress idarəsi", "Good sleep and stress management", "Качественный сон и управление стрессом"),
+         T("Gündə 7–8 saat yuxu və stressi azaldan vərdişlər (gəzinti, nəfəs məşqləri) ümumi sağlamlığa müsbət təsir edir.",
+           "7–8 hours of sleep and stress-reducing habits (walks, breathing exercises) benefit overall health.",
+           "7–8 часов сна и привычки, снижающие стресс (прогулки, дыхательные упражнения), положительно влияют на здоровье.")),
+        (T("Vitamin və əlavələri düşünərək seçin", "Choose vitamins and supplements wisely", "Осознанно выбирайте витамины и добавки"),
+         T("Vitamin və BAQM-lar tarazlı qidalanmanı əvəz etmir. D vitamini kimi məhsulları qəbul etməzdən əvvəl dozanı həkimlə razılaşdırın.",
+           "Vitamins and supplements do not replace a balanced diet. Agree the dose with your doctor before taking products such as vitamin D.",
+           "Витамины и БАД не заменяют сбалансированное питание. Перед приёмом, например, витамина D согласуйте дозу с врачом.")),
     ]
-    t = "".join(f'<div class="card tip reveal"><div class="num">{i+1}</div><div><h3>{a}</h3><p>{b}</p></div></div>' for i, (a, b) in enumerate(tips))
-    body = head("Sağlamlıq məsləhətləri", "Ürək sağlamlığı üçün ümumi məsləhətlər: qidalanma, hərəkət, təzyiqə nəzarət və vitaminlərə düzgün yanaşma.") + header("meslehetler.html") + page_hero(
-        "Sağlamlıq məsləhətləri", "Ürək sağlamlığı və gündəlik rifah üçün sadə, ümumi tövsiyələr.", ["Məsləhətlər"]) + f"""
+    t = "".join(f'<div class="card tip reveal"><div class="num">{i+1}</div><div><h3>{a}</h3><p>{b}</p></div></div>' for i, (a, b) in enumerate(tp))
+    ttl = T("Sağlamlıq məsləhətləri", "Health tips", "Советы по здоровью")
+    body = head(ttl, T("Ürək sağlamlığı üçün ümumi məsləhətlər: qidalanma, hərəkət, təzyiqə nəzarət və vitaminlərə düzgün yanaşma.",
+                       "General heart-health tips: nutrition, activity, blood-pressure control and a sensible approach to vitamins.",
+                       "Общие советы для здоровья сердца: питание, активность, контроль давления и разумный подход к витаминам."), "meslehetler.html") + header("meslehetler.html", "meslehetler.html") + page_hero(
+        ttl, T("Ürək sağlamlığı və gündəlik rifah üçün sadə, ümumi tövsiyələr.", "Simple, general recommendations for heart health and everyday wellbeing.", "Простые общие рекомендации для здоровья сердца и повседневного благополучия."), [T("Məsləhətlər", "Tips", "Советы")]) + f"""
 <section class="section"><div class="container"><div class="grid g2">{t}</div>
-<div class="notice reveal" style="margin-top:28px"><strong>Xəbərdarlıq:</strong> Bu səhifədəki məlumatlar ümumi xarakter daşıyır və fərdi tibbi məsləhəti əvəz etmir. Sinə ağrısı, nəfəs darlığı, huşun itməsi kimi hallarda dərhal təcili yardım çağırın.</div></div></section>
+<div class="notice reveal" style="margin-top:28px"><strong>{T('Xəbərdarlıq:', 'Warning:', 'Предупреждение:')}</strong> {T('Bu səhifədəki məlumatlar ümumi xarakter daşıyır və fərdi tibbi məsləhəti əvəz etmir. Sinə ağrısı, nəfəs darlığı, huşun itməsi kimi hallarda dərhal təcili yardım çağırın.',
+ 'The information on this page is general and does not replace personalised medical advice. In case of chest pain, shortness of breath or loss of consciousness, call emergency services immediately.',
+ 'Информация на этой странице носит общий характер и не заменяет индивидуальную медицинскую консультацию. При боли в груди, одышке или потере сознания немедленно вызывайте скорую помощь.')}</div></div></section>
 {cta_block()}""" + footer()
     write("meslehetler.html", body)
 
 
 def faq():
     qa = [
-        ("BAQM nədir?", "BAQM — bioloji aktiv qida məhsulu deməkdir. Bu məhsullar dərman vasitəsi deyil; qidaya əlavə kimi nəzərdə tutulub və xəstəliklərin müalicəsi üçün istifadə edilməməlidir."),
-        ("Məhsulları reseptsiz almaq olarmı?", "Saytda təqdim olunan məhsulların hamısı aptekdən reseptsiz buraxılır. Yenə də istifadədən əvvəl həkim və ya əczaçı ilə məsləhətləşməyiniz tövsiyə olunur."),
-        ("Hamiləlik və ya əmizdirmə dövründə istifadə edə bilərəmmi?", "Məhsulların etiketində göstərildiyi kimi, hamiləlik və laktasiya dövründə, həmçinin xəstəlik və ya dərman qəbulu zamanı mütləq həkimlə məsləhətləşin."),
-        ("Uşaqlar üçün uyğundurmu?", "Depomer D3+K2 etiketdə 2–4 və 4–14 yaş qrupları üçün uyğun göstərilib. Digər məhsullar üçün həkim məsləhəti lazımdır. Bütün məhsulları uşaqların əli çatmayan yerdə saxlayın."),
-        ("Məhsulları necə saxlamalıyam?", "Etiketlərə əsasən 25 °C-dən yüksək olmayan temperaturda, quru, işıqdan qorunan və uşaqların əli çatmayan yerdə saxlayın."),
-        ("Yararlılıq müddəti nə qədərdir?", "Təqdim etdiyimiz məhsulların yararlılıq müddəti istehsal tarixindən 3 ildir. Tarix qutunun üzərində göstərilir; müddət bitdikdən sonra istifadə etməyin."),
-        ("Məhsulu necə sifariş edə bilərəm?", f"{PHONE_SHOW} nömrəsinə zəng edin, WhatsApp-da yazın və ya Əlaqə səhifəsindəki formadan istifadə edin."),
-        ("Dozanı artırsam daha tez təsir edərmi?", "Xeyr. Tövsiyə edilən sutkalıq dozanı keçməyin. Dozanın dəyişdirilməsi yalnız həkim məsləhəti ilə mümkündür."),
+        (T("BAQM nədir?", "What is a dietary supplement (BAQM)?", "Что такое БАД?"),
+         T("BAQM — bioloji aktiv qida məhsulu deməkdir. Bu məhsullar dərman vasitəsi deyil; qidaya əlavə kimi nəzərdə tutulub və xəstəliklərin müalicəsi üçün istifadə edilməməlidir.",
+           "BAQM stands for biologically active food product. These are not medicines; they are intended as a supplement to the diet and must not be used to treat diseases.",
+           "БАД — биологически активная добавка к пище. Это не лекарственные средства; они предназначены для дополнения рациона и не должны использоваться для лечения заболеваний.")),
+        (T("Məhsulları reseptsiz almaq olarmı?", "Can I buy the products without a prescription?", "Можно ли купить товары без рецепта?"),
+         T("Saytda təqdim olunan məhsulların hamısı aptekdən reseptsiz buraxılır. Yenə də istifadədən əvvəl həkim və ya əczaçı ilə məsləhətləşməyiniz tövsiyə olunur.",
+           "All products on this site are dispensed without a prescription. Still, it is recommended to consult a doctor or pharmacist before use.",
+           "Все товары на сайте отпускаются без рецепта. Тем не менее перед применением рекомендуется проконсультироваться с врачом или фармацевтом.")),
+        (T("Hamiləlik və ya əmizdirmə dövründə istifadə edə bilərəmmi?", "Can I use them during pregnancy or breastfeeding?", "Можно ли применять при беременности и кормлении грудью?"),
+         T("Məhsulların etiketində göstərildiyi kimi, hamiləlik və laktasiya dövründə, həmçinin xəstəlik və ya dərman qəbulu zamanı mütləq həkimlə məsləhətləşin.",
+           "As stated on the product labels, always consult a doctor during pregnancy and lactation, as well as during illness or when taking medication.",
+           "Как указано на этикетках, при беременности и лактации, а также при болезни или приёме лекарств обязательно проконсультируйтесь с врачом.")),
+        (T("Uşaqlar üçün uyğundurmu?", "Are they suitable for children?", "Подходят ли они детям?"),
+         T("Depomer D3+K2 etiketdə 2–4 və 4–14 yaş qrupları üçün uyğun göstərilib. Digər məhsullar üçün həkim məsləhəti lazımdır. Bütün məhsulları uşaqların əli çatmayan yerdə saxlayın.",
+           "Depomer D3+K2 is labelled as suitable for the 2–4 and 4–14 age groups. For other products a doctor's advice is needed. Keep all products out of reach of children.",
+           "Depomer D3+K2 на этикетке указан как подходящий для возрастных групп 2–4 и 4–14 лет. Для остальных товаров нужна консультация врача. Храните все товары в недоступном для детей месте.")),
+        (T("Məhsulları necə saxlamalıyam?", "How should I store the products?", "Как хранить товары?"),
+         T("Etiketlərə əsasən 25 °C-dən yüksək olmayan temperaturda, quru, işıqdan qorunan və uşaqların əli çatmayan yerdə saxlayın.",
+           "According to the labels, store at a temperature not above 25 °C, in a dry place protected from light and out of reach of children.",
+           "Согласно этикеткам, храните при температуре не выше 25 °C, в сухом, защищённом от света и недоступном для детей месте.")),
+        (T("Yararlılıq müddəti nə qədərdir?", "What is the shelf life?", "Каков срок годности?"),
+         T("Təqdim etdiyimiz məhsulların yararlılıq müddəti istehsal tarixindən 3 ildir. Tarix qutunun üzərində göstərilir; müddət bitdikdən sonra istifadə etməyin.",
+           "The shelf life of our products is 3 years from the production date. The date is printed on the box; do not use after it expires.",
+           "Срок годности наших товаров — 3 года с даты производства. Дата указана на коробке; по истечении срока не используйте.")),
+        (T("Məhsulu necə sifariş edə bilərəm?", "How can I order a product?", "Как заказать товар?"),
+         T(f"{PHONE_SHOW} nömrəsinə zəng edin, WhatsApp-da yazın və ya Əlaqə səhifəsindəki formadan istifadə edin.",
+           f"Call {PHONE_SHOW}, message us on WhatsApp or use the form on the Contact page.",
+           f"Позвоните на {PHONE_SHOW}, напишите в WhatsApp или воспользуйтесь формой на странице «Контакты».")),
+        (T("Dozanı artırsam daha tez təsir edərmi?", "Will a higher dose work faster?", "Подействует ли быстрее увеличенная доза?"),
+         T("Xeyr. Tövsiyə edilən sutkalıq dozanı keçməyin. Dozanın dəyişdirilməsi yalnız həkim məsləhəti ilə mümkündür.",
+           "No. Do not exceed the recommended daily dose. The dose may only be changed on a doctor's advice.",
+           "Нет. Не превышайте рекомендуемую суточную дозу. Изменять дозу можно только по рекомендации врача.")),
     ]
     d = "".join(f"<details class='reveal'><summary>{q}</summary><p>{a}</p></details>" for q, a in qa)
-    body = head("Tez-tez verilən suallar", "Kardio Aptek: BAQM, doza, saxlanma, yararlılıq müddəti və sifariş barədə tez-tez verilən suallar.") + header("suallar.html") + page_hero(
-        "Tez-tez verilən suallar", "Ən çox soruşulan suallara qısa cavablar.", ["Suallar"]) + f"""
+    ttl = T("Tez-tez verilən suallar", "Frequently asked questions", "Часто задаваемые вопросы")
+    body = head(ttl, T("Kardio Aptek: BAQM, doza, saxlanma, yararlılıq müddəti və sifariş barədə tez-tez verilən suallar.",
+                       "Kardio Aptek: frequently asked questions about supplements, dosage, storage, shelf life and ordering.",
+                       "Kardio Aptek: ответы на частые вопросы о БАД, дозировке, хранении, сроке годности и заказе."), "suallar.html") + header("suallar.html", "suallar.html") + page_hero(
+        ttl, T("Ən çox soruşulan suallara qısa cavablar.", "Short answers to the most common questions.", "Краткие ответы на самые частые вопросы."), [T("Suallar", "FAQ", "Вопросы")]) + f"""
 <section class="section"><div class="container" style="max-width:820px">{d}</div></section>{cta_block()}""" + footer()
     write("suallar.html", body)
 
 
 def contact():
-    body = head("Əlaqə", f"Kardio Aptek ilə əlaqə: {PHONE_SHOW}. WhatsApp və ya zəng ilə sifariş və məsləhət.") + header("elaqe.html") + page_hero(
-        "Əlaqə", "Sualınız və ya sifarişiniz üçün bizimlə əlaqə saxlayın.", ["Əlaqə"]) + f"""
+    ttl = T("Əlaqə", "Contact", "Контакты")
+    tpl = f'data-t1="{T("Salam! Mən ", "Hello! My name is ", "Здравствуйте! Меня зовут ")}" data-t2="{T("Telefon", "Phone", "Телефон")}" data-t3="{T("Mövzu", "Topic", "Тема")}"'
+    body = head(ttl, T(f"Kardio Aptek ilə əlaqə: {PHONE_SHOW}. WhatsApp və ya zəng ilə sifariş və məsləhət.", f"Contact Kardio Aptek: {PHONE_SHOW}. Orders and advice by phone or WhatsApp.", f"Связаться с Kardio Aptek: {PHONE_SHOW}. Заказы и консультации по телефону или в WhatsApp."), "elaqe.html") + header("elaqe.html", "elaqe.html") + page_hero(
+        ttl, T("Sualınız və ya sifarişiniz üçün bizimlə əlaqə saxlayın.", "Get in touch for questions or orders.", "Свяжитесь с нами по вопросам или для заказа."), [ttl]) + f"""
 <section class="section"><div class="container contact-grid">
 <div class="reveal"><ul class="contact-list">
-<li><div class="icon red">{ICON['phone']}</div><div><small>Telefon</small><b><a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a></b></div></li>
-<li><div class="icon">{ICON['wa']}</div><div><small>WhatsApp</small><b><a href="https://wa.me/{WA}" target="_blank" rel="noopener">Mesaj yazın</a></b></div></li>
-<li><div class="icon">{ICON['pin']}</div><div><small>Ünvan</small><b>{CITY}</b></div></li>
-<li><div class="icon">{ICON['clock']}</div><div><small>İş saatları</small><b>{HOURS}</b></div></li></ul></div>
-<div class="card reveal"><h3>Bizə yazın</h3><p style="margin-bottom:16px">Formu doldurduqda mesajınız WhatsApp-da hazır şəkildə açılacaq.</p>
-<form id="contact-form" data-wa="{WA}">
-<label for="n">Adınız</label><input class="input" id="n" name="name" required autocomplete="name">
-<label for="p">Telefon</label><input class="input" id="p" name="phone" type="tel" required autocomplete="tel">
-<label for="t">Mövzu</label><select class="input" id="t" name="topic"><option>Məhsul haqqında sual</option><option>Sifariş</option><option>Digər</option></select>
-<label for="m">Mesaj</label><textarea class="input" id="m" name="message" required></textarea>
-<button class="btn btn-primary" type="submit">WhatsApp-da göndər</button></form></div>
+<li><div class="icon red">{ICON['phone']}</div><div><small>{T('Telefon', 'Phone', 'Телефон')}</small><b><a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a></b></div></li>
+<li><div class="icon">{ICON['wa']}</div><div><small>WhatsApp</small><b><a href="https://wa.me/{WA}" target="_blank" rel="noopener">{T('Mesaj yazın', 'Send a message', 'Написать сообщение')}</a></b></div></li>
+<li><div class="icon">{ICON['pin']}</div><div><small>{T('Ünvan', 'Address', 'Адрес')}</small><b>{city()}</b></div></li>
+<li><div class="icon">{ICON['clock']}</div><div><small>{T('İş saatları', 'Opening hours', 'Часы работы')}</small><b>{hours()}</b></div></li></ul></div>
+<div class="card reveal"><h3>{T('Bizə yazın', 'Write to us', 'Напишите нам')}</h3><p style="margin-bottom:16px">{T('Formu doldurduqda mesajınız WhatsApp-da hazır şəkildə açılacaq.', 'When you submit the form, your message opens ready to send in WhatsApp.', 'После отправки формы сообщение откроется в WhatsApp уже готовым к отправке.')}</p>
+<form id="contact-form" data-wa="{WA}" {tpl}>
+<label for="n">{T('Adınız', 'Your name', 'Ваше имя')}</label><input class="input" id="n" name="name" required autocomplete="name">
+<label for="p">{T('Telefon', 'Phone', 'Телефон')}</label><input class="input" id="p" name="phone" type="tel" required autocomplete="tel">
+<label for="t">{T('Mövzu', 'Topic', 'Тема')}</label><select class="input" id="t" name="topic"><option>{T('Məhsul haqqında sual', 'Question about a product', 'Вопрос о товаре')}</option><option>{T('Sifariş', 'Order', 'Заказ')}</option><option>{T('Digər', 'Other', 'Другое')}</option></select>
+<label for="m">{T('Mesaj', 'Message', 'Сообщение')}</label><textarea class="input" id="m" name="message" required></textarea>
+<button class="btn btn-primary" type="submit">{T('WhatsApp-da göndər', 'Send via WhatsApp', 'Отправить в WhatsApp')}</button></form></div>
 </div></section>
-<section class="section alt"><div class="container"><div class="section-head"><span class="eyebrow">Xəritə</span><h2>Bizi necə tapmaq olar</h2>
-<p class="lead">Qara Qarayev metrostansiyasının yaxınlığında, S. Mirzəyev küçəsində yerləşirik.</p></div>
-<div class="map reveal"><iframe title="Kardio Aptek — Google Maps" src="{MAP_EMBED}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
-<p style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-green" href="{MAP_DIR}" target="_blank" rel="noopener">📍 Yol tarifi al</a><a class="btn btn-outline" href="{MAP_LINK}" target="_blank" rel="noopener">Google Maps-də aç</a></p></div></section>""" + footer()
+<section class="section alt"><div class="container"><div class="section-head"><span class="eyebrow">{T('Xəritə', 'Map', 'Карта')}</span><h2>{T('Bizi necə tapmaq olar', 'How to find us', 'Как нас найти')}</h2>
+<p class="lead">{T('Qara Qarayev metrostansiyasının yaxınlığında, S. Mirzəyev küçəsində yerləşirik.', 'We are located near Qara Qarayev metro station, on S. Mirzayev street.', 'Мы находимся рядом со станцией метро «Гара Гараев», на улице С. Мирзоева.')}</p></div>
+<div class="map reveal"><iframe title="Kardio Aptek — Google Maps" src="{map_embed()}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+<p style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-green" href="{MAP_DIR}" target="_blank" rel="noopener">📍 {T('Yol tarifi al', 'Get directions', 'Построить маршрут')}</a><a class="btn btn-outline" href="{MAP_LINK}" target="_blank" rel="noopener">{T('Google Maps-də aç', 'Open in Google Maps', 'Открыть в Google Maps')}</a></p></div></section>""" + footer()
     write("elaqe.html", body)
 
 
 def privacy():
-    body = head("Məxfilik siyasəti", "Kardio Aptek saytının məxfilik siyasəti.") + header("") + page_hero(
-        "Məxfilik siyasəti", f"Son yenilənmə: {YEAR}", ["Məxfilik"]) + f"""
+    ttl = T("Məxfilik siyasəti", "Privacy policy", "Политика конфиденциальности")
+    body = head(ttl, T("Kardio Aptek saytının məxfilik siyasəti.", "Privacy policy of the Kardio Aptek website.", "Политика конфиденциальности сайта Kardio Aptek."), "mexfiyyet.html") + header("", "mexfiyyet.html") + page_hero(
+        ttl, T(f"Son yenilənmə: {YEAR}", f"Last updated: {YEAR}", f"Последнее обновление: {YEAR}"), [T("Məxfilik", "Privacy", "Конфиденциальность")]) + f"""
 <section class="section"><div class="container prose">
-<h2>Toplanan məlumatlar</h2><p>Bu sayt serverdə şəxsi məlumat saxlamır. Əlaqə formasında daxil etdiyiniz məlumatlar (ad, telefon, mesaj) yalnız sizin təsdiqinizlə WhatsApp vasitəsilə bizə göndərilir.</p>
-<h2>Üçüncü tərəflər</h2><p>Sayt şrift yükləmək üçün Google Fonts xidmətindən istifadə edir; bu zaman brauzeriniz həmin xidmətə sorğu göndərir.</p>
-<h2>Tibbi məlumat</h2><p>Saytdakı məlumatlar məlumat xarakterlidir, həkim məsləhətini və diaqnozu əvəz etmir.</p>
-<h2>Əlaqə</h2><p>Suallarınız üçün: <a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a>.</p></div></section>""" + footer()
+<h2>{T('Toplanan məlumatlar', 'Data we collect', 'Собираемые данные')}</h2><p>{T('Bu sayt serverdə şəxsi məlumat saxlamır. Əlaqə formasında daxil etdiyiniz məlumatlar (ad, telefon, mesaj) yalnız sizin təsdiqinizlə WhatsApp vasitəsilə bizə göndərilir.',
+ 'This site does not store personal data on a server. Information you enter in the contact form (name, phone, message) is sent to us via WhatsApp only with your confirmation.',
+ 'Этот сайт не хранит персональные данные на сервере. Данные, введённые в форме обратной связи (имя, телефон, сообщение), отправляются нам через WhatsApp только с вашего подтверждения.')}</p>
+<h2>{T('Üçüncü tərəflər', 'Third parties', 'Третьи стороны')}</h2><p>{T('Sayt şrift yükləmək üçün Google Fonts, xəritə üçün isə Google Maps xidmətindən istifadə edir; bu zaman brauzeriniz həmin xidmətlərə sorğu göndərir.',
+ 'The site uses Google Fonts to load fonts and Google Maps for the map; your browser sends requests to these services.',
+ 'Сайт использует Google Fonts для загрузки шрифтов и Google Maps для карты; при этом ваш браузер отправляет запросы к этим сервисам.')}</p>
+<h2>{T('Tibbi məlumat', 'Medical information', 'Медицинская информация')}</h2><p>{T('Saytdakı məlumatlar məlumat xarakterlidir, həkim məsləhətini və diaqnozu əvəz etmir.', 'The information on this site is for reference only and does not replace medical advice or diagnosis.', 'Информация на сайте носит справочный характер и не заменяет консультацию врача и диагностику.')}</p>
+<h2>{T('Əlaqə', 'Contact', 'Контакты')}</h2><p>{T('Suallarınız üçün', 'For any questions', 'По всем вопросам')}: <a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a>.</p></div></section>""" + footer()
     write("mexfiyyet.html", body)
 
 
 def not_found():
-    body = head("Səhifə tapılmadı", "Axtardığınız səhifə mövcud deyil.") + header("") + f"""
-<section class="section"><div class="container center"><span class="eyebrow">404</span><h1>Səhifə tapılmadı</h1>
-<p class="lead">Axtardığınız səhifə köçürülüb və ya mövcud deyil.</p><p><a class="btn btn-green" href="index.html">Ana səhifəyə qayıt</a></p></div></section>""" + footer()
+    ttl = T("Səhifə tapılmadı", "Page not found", "Страница не найдена")
+    body = head(ttl, T("Axtardığınız səhifə mövcud deyil.", "The page you are looking for does not exist.", "Запрашиваемая страница не существует."), "404.html") + header("", "404.html") + f"""
+<section class="section"><div class="container center"><span class="eyebrow">404</span><h1>{ttl}</h1>
+<p class="lead">{T('Axtardığınız səhifə köçürülüb və ya mövcud deyil.', 'The page you are looking for has moved or does not exist.', 'Страница перемещена или не существует.')}</p><p><a class="btn btn-green" href="index.html">{T('Ana səhifəyə qayıt', 'Back to home', 'На главную')}</a></p></div></section>""" + footer()
     write("404.html", body)
 
 
 def static():
     (ROOT / "favicon.svg").write_text(LOGO.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ', 1), encoding="utf-8")
     (ROOT / "robots.txt").write_text("User-agent: *\nAllow: /\n", encoding="utf-8")
+    # root redirect for 404 asset paths is not needed; language folders reference ../assets
 
 
 if __name__ == "__main__":
-    home(); about(); catalog()
-    for p in PRODUCTS:
-        detail(p)
-    services(); tips(); faq(); contact(); privacy(); not_found(); static()
+    for LANG in LANGS:
+        home(); about(); catalog()
+        for p in products():
+            detail(p)
+        services(); tips(); faq(); contact(); privacy(); not_found()
+    static()
