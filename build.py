@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Static site generator for Kardio Aptek. Run: python3 build.py  -> writes *.html next to this file."""
+import re
 from html import escape as e
 from pathlib import Path
 
@@ -56,6 +57,7 @@ def outdir():
 
 def units(x):
     """Convert Azerbaijani unit abbreviations in an amount string."""
+    x = re.sub(r"(?<=\d) q$", " " + T("q", "g", "г"), x)
     return (x.replace("mkq", T("mkq", "mcg", "мкг")).replace("mq", T("mq", "mg", "мг"))
              .replace("BV", T("BV", "IU", "МЕ")).replace("50 000", T("50 000", "50,000", "50 000")))
 
@@ -90,7 +92,7 @@ def nav_label(t):
 
 
 # --------------------------------------------------------------------------- products
-def products():
+def products_base():
     return [
         dict(
             slug="karno-mer", name="Karno Mer", cat="urek",
@@ -267,10 +269,243 @@ def products():
     ]
 
 
+
+
+# --------------------------------------------------------------------------- additional products (added 13 Oct)
+STORE_LO = lambda: T("25 °C-dən aşağı temperaturda, quru, sərin, günəş şüası düşməyən və uşaqların əli çatmayan yerdə.",
+                     "At a temperature below 25 °C, in a dry, cool place away from sunlight and out of reach of children.",
+                     "При температуре ниже 25 °C, в сухом, прохладном месте, защищённом от солнечных лучей и недоступном для детей.")
+STORE_HI = lambda: T("25 °C-dən yüksək olmayan temperaturda, quru, işıqdan qorunan və uşaqların əli çatmayan yerdə.",
+                     "At a temperature not above 25 °C, in a dry place protected from light and out of reach of children.",
+                     "При температуре не выше 25 °C, в сухом, защищённом от света и недоступном для детей месте.")
+EVA = lambda: T("EVA MED MMC (Azərbaycan Respublikası, Bakı)", "EVA MED MMC (Republic of Azerbaijan, Baku)", "EVA MED MMC (Азербайджанская Республика, Баку)")
+SH3 = lambda: T("3 il", "3 years", "3 года")
+BAQM = lambda: T("BAQM", "Dietary supplement", "БАД")
+TIBBI = lambda: T("Tibbi vasitə", "Medical device", "Медицинское изделие")
+CAUTION_SENS = lambda: T(["Məhsulun tərkibindəki hər hansı komponentə qarşı həssaslıq."],
+                         ["Sensitivity to any component of the product."],
+                         ["Повышенная чувствительность к любому из компонентов продукта."])
+MAXDOSE = lambda: T("Tövsiyə edilən sutkalıq dozanı keçməyin.", "Do not exceed the recommended daily dose.", "Не превышайте рекомендуемую суточную дозу.")
+
+
+def cap(az, en, ru):
+    return T(az, en, ru)
+
+
+def products_new():
+    box = lambda n: cap("qutunun ön üzü", "front of the box", "лицевая сторона коробки")
+    leaf = lambda n="": cap("İstifadə təlimatı vərəqi", "Instruction leaflet", "Инструкция по применению") + n
+    side = lambda: cap("Qutunun yan üzü", "Side of the box", "Боковая сторона коробки")
+    comp = lambda: cap("Tərkib və istifadə qaydası", "Composition and directions", "Состав и способ применения")
+    aa = [("Alanin", "Alanine", "Аланин", "1"), ("Asparagin", "Asparagine", "Аспарагин", "1"), ("Aspartik turşusu", "Aspartic acid", "Аспарагиновая кислота", "1"),
+          ("Sistein", "Cysteine", "Цистеин", "1"), ("Qlutamik turşusu", "Glutamic acid", "Глутаминовая кислота", "1"), ("Qlutamin", "Glutamine", "Глутамин", "1"),
+          ("Qlisin", "Glycine", "Глицин", "2"), ("Serin", "Serine", "Серин", "1"), ("Tirozin", "Tyrosine", "Тирозин", "1"), ("Prolin", "Proline", "Пролин", "1"),
+          ("Arginin", "Arginine", "Аргинин", "1.2"), ("Histidin", "Histidine", "Гистидин", "0.7"), ("İzoleysin", "Isoleucine", "Изолейцин", "1.18"),
+          ("Leysin", "Leucine", "Лейцин", "3.66"), ("Lizin HCl", "Lysine HCl", "Лизина гидрохлорид", "5"), ("Metionin", "Methionine", "Метионин", "1.84"),
+          ("Fenilalanin", "Phenylalanine", "Фенилаланин", "1"), ("Treonin", "Threonine", "Треонин", "0.85"), ("Triptofan", "Tryptophan", "Триптофан", "1"),
+          ("Valin", "Valine", "Валин", "1.34")]
+    meta_ing = [(("L-" + a, "L-" + b, "L-" + c), "", d + " mq") for a, b, c, d in aa] + [(("Vitamin C", "Vitamin C", "Витамин C"), "", "100 mq")]
+    return [
+        dict(slug="aktimer", name="Aktimer", cat="urek", kind=BAQM(), medical=False,
+             short=T("Ürək, beyin və enerji mübadiləsini dəstəkləyən məhlul — 150 ml.", "A solution supporting the heart, brain and energy metabolism — 150 ml.", "Раствор для поддержки сердца, мозга и энергетического обмена — 150 мл."),
+             form=T("Daxilə qəbul üçün məhlul", "Oral solution", "Раствор для приёма внутрь"),
+             pack=T("150 ml şüşə flakon, karton qutu", "150 ml glass vial, cardboard box", "Стеклянный флакон 150 мл, картонная коробка"),
+             card="aktimer-card.jpg", head="aktimer-qutu.jpg",
+             comp_title=T("10 ml-in tərkibi", "Composition per 10 ml", "Состав на 10 мл"),
+             ing=[(("L-Karnitin", "L-Carnitine", "L-Карнитин"), "L-carnitine", "300 mq"), (("Koenzim Q10", "Coenzyme Q10", "Коэнзим Q10"), "Coenzyme Q10", "10 mq"),
+                  (("Vitamin B12", "Vitamin B12", "Витамин B12"), "Cyanocobalamin", "5 mkq"), (("Xolin bitartrat", "Choline bitartrate", "Холина битартрат"), "Choline bitartrate", "10 mq")],
+             excip=T("Sukraloza, portağal dadlandırıcısı, ksantan qətranı, natrium benzoat, kalium sorbat, limon turşusu, deionlaşdırılmış su.",
+                     "Sucralose, orange flavouring, xanthan gum, sodium benzoate, potassium sorbate, citric acid, deionized water.",
+                     "Сукралоза, ароматизатор апельсина, ксантановая камедь, бензоат натрия, сорбат калия, лимонная кислота, деионизированная вода."),
+             indication=T("Ürək, beyin və enerji mübadiləsini eyni anda dəstəkləyən, fiziki və əqli gərginliyi aradan qaldırmaq məqsədi ilə tövsiyə olunan vasitə.",
+                          "Recommended to support the heart, brain and energy metabolism at the same time and to help relieve physical and mental strain.",
+                          "Рекомендуется для одновременной поддержки сердца, мозга и энергетического обмена, а также для снятия физического и умственного напряжения."),
+             dose=T(["4–14 yaş: 5 ml gündə 1 dəfə.", "14 yaşdan yuxarı və böyüklər: 10 ml gündə 1 dəfə.", "Qida qəbulundan sonra daxilə qəbul olunur.", "4 yaşdan aşağı uşaqlar üçün istifadə olunmur.", "Tövsiyə edilən sutkalıq dozanı keçməyin."],
+                    ["Ages 4–14: 5 ml once a day.", "Over 14 and adults: 10 ml once a day.", "Take orally after meals.", "Not for children under 4 years.", "Do not exceed the recommended daily dose."],
+                    ["4–14 лет: 5 мл 1 раз в день.", "Старше 14 лет и взрослые: 10 мл 1 раз в день.", "Принимать внутрь после еды.", "Не применять детям младше 4 лет.", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=CAUTION_SENS(), storage=STORE_LO(), shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine",
+             series="114", made="01.2026", exp="01.2029", reg="", extra="",
+             gallery=[("aktimer-qutu.jpg", "Aktimer — " + box(0)), ("aktimer-terkib.jpg", comp()), ("aktimer-yan.jpg", side()),
+                      ("aktimer-vereq.jpg", leaf(" (1)")), ("aktimer-vereq2.jpg", leaf(" (2)"))]),
+        dict(slug="laktomer-max", name="Laktomer-Max", cat="immun", kind=BAQM(), medical=False,
+             short=T("İmmun sistemin fəaliyyətini yaxşılaşdırmaq üçün bitki ekstraktları — 100 ml.", "Plant extracts to support the immune system — 100 ml.", "Растительные экстракты для поддержки иммунной системы — 100 мл."),
+             form=T("Daxilə qəbul üçün məhlul", "Oral solution", "Раствор для приёма внутрь"),
+             pack=T("100 ml şüşə flakon, karton qutu", "100 ml glass vial, cardboard box", "Стеклянный флакон 100 мл, картонная коробка"),
+             card="laktomer-card.jpg", head="laktomer-qutu.jpg",
+             comp_title=T("2 ml-in tərkibi", "Composition per 2 ml", "Состав на 2 мл"),
+             ing=[(("Qara qoz qabığının ekstraktı", "Black walnut hull extract", "Экстракт кожуры чёрного ореха"), "Black Walnut Hull Extract", "500 mq"),
+                  (("Şirin kök (Glycyrrhiza glabra) ekstraktı", "Licorice root (Glycyrrhiza glabra) extract", "Экстракт корня солодки (Glycyrrhiza glabra)"), "Licorice Root Extract", "400 mq"),
+                  (("Balqabaq toxumunun ekstraktı", "Pumpkin seed extract", "Экстракт семян тыквы"), "Pumpkin Seed Extract", "250 mq"),
+                  (("Dağtərəxunu ekstraktı", "Yarrow extract", "Экстракт тысячелистника"), "Yarrow Extract", "250 mq"),
+                  (("Qərənfil çiçəyinin yağı", "Clove flower oil", "Масло цветков гвоздики"), "Clove Flower Oil", "250 mq"),
+                  (("Sarımsaq ekstraktı", "Garlic extract", "Экстракт чеснока"), "Garlic Extract", "250 mq")],
+             excip=T("Təmizlənmiş su, sorbitol, sukraloza, limon turşusu, kalium sorbat, natrium benzoat, təbii aroma.",
+                     "Purified water, sorbitol, sucralose, citric acid, potassium sorbate, sodium benzoate, natural flavour.",
+                     "Очищенная вода, сорбитол, сукралоза, лимонная кислота, сорбат калия, бензоат натрия, натуральный ароматизатор."),
+             indication=T("İmmun sisteminin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.", "Recommended to support the function of the immune system.", "Рекомендуется для улучшения функции иммунной системы."),
+             dose=T(["2–3 yaş: 2.5 ml gündə 1 dəfə.", "4–12 yaş: 5 ml gündə 1 dəfə.", "12 yaş və böyüklər: 10 ml gündə 1 dəfə.", "Kurs müddəti: 7–14 gün.", "Tövsiyə edilən sutkalıq dozanı keçməyin."],
+                    ["Ages 2–3: 2.5 ml once a day.", "Ages 4–12: 5 ml once a day.", "Age 12 and over, adults: 10 ml once a day.", "Course: 7–14 days.", "Do not exceed the recommended daily dose."],
+                    ["2–3 года: 2,5 мл 1 раз в день.", "4–12 лет: 5 мл 1 раз в день.", "Старше 12 лет и взрослые: 10 мл 1 раз в день.", "Курс: 7–14 дней.", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=CAUTION_SENS(), storage=STORE_LO(), shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine",
+             series="", made="", exp="", reg="", extra="",
+             gallery=[("laktomer-qutu.jpg", "Laktomer-Max — " + box(0)), ("laktomer-terkib.jpg", comp()), ("laktomer-doza.jpg", T("Doza və saxlanma", "Dosage and storage", "Дозировка и хранение")),
+                      ("laktomer-vereq.jpg", leaf(" (1)")), ("laktomer-vereq2.jpg", leaf(" (2)")), ("laktomer-vereq3.jpg", leaf(" (3)"))]),
+        dict(slug="fargimer", name="Fargimer", cat="tenefus", kind=TIBBI(), medical=True,
+             short=T("Kombinə olunmuş boğaz spreyi — 30 ml.", "A combined throat spray — 30 ml.", "Комбинированный спрей для горла — 30 мл."),
+             form=T("Daxilə qəbul üçün məhlul-sprey", "Oral solution (spray)", "Раствор-спрей для приёма внутрь"),
+             pack=T("30 ml şüşə flakon, karton qutu", "30 ml glass vial, cardboard box", "Стеклянный флакон 30 мл, картонная коробка"),
+             card="fargimer-card.jpg", head="fargimer-qutu.jpg",
+             comp_title=T("30 ml-in tərkibi", "Composition per 30 ml", "Состав на 30 мл"),
+             ing=[(("Sürvə yarpaqlarının maye ekstraktı", "Sage leaf liquid extract", "Жидкий экстракт листьев шалфея"), "Salviae officinalis folia", "0.01 q"),
+                  (("Müalicəvi gülümbahar gülünün maye ekstraktı", "Calendula flower liquid extract", "Жидкий экстракт цветков календулы"), "Calendulae officinalis flores", "0.01 q"),
+                  (("İtburnu güllərinin və toxumlarının yağı", "Rosehip flower and seed oil", "Масло цветков и семян шиповника"), "Oleum rosae pinuae", "0.03 q"),
+                  (("Ayıpəncəsi kökünün cövhəri", "Burdock root tincture", "Настойка корня лопуха"), "Arctium lappa L. Ext. et tincture", "0.01 q"),
+                  (("Metilen abısının suda məhlulu", "Methylene blue aqueous solution", "Водный раствор метиленового синего"), "Methylenum coeruleum", "1 %")],
+             excip=T("Propilen qlikol, kalium sorbat, kalium yodid, distillə edilmiş su.", "Propylene glycol, potassium sorbate, potassium iodide, distilled water.", "Пропиленгликоль, сорбат калия, йодид калия, дистиллированная вода."),
+             indication=T("Ağız boşluğu və boğaz xəstəliklərinin profilaktika və müalicəsində istifadəsi tövsiyə olunan köməkçi tibbi vasitə.",
+                          "A supporting medical device recommended for the prevention and treatment of oral cavity and throat conditions.",
+                          "Вспомогательное медицинское изделие для профилактики и лечения заболеваний полости рта и горла."),
+             about=T("Fargimer kombinə olunmuş boğaz spreyidir.", "Fargimer is a combined throat spray.", "Fargimer — комбинированный спрей для горла."),
+             uses=T(["Yuxarı tənəffüs yollarının infeksion iltihabı xəstəliklərində köməkçi vasitə kimi: tonzilit, farinqit, larinqit, afoniya, disfoniya", "Orofaringeal infeksiyalar",
+                     "Səpkili və xoralı stomatitlər", "Yenidoğulmuşun ağız boşluğunda süd yarası (kandidoz)", "Gingivit, parodontoz", "Boğazda ağrı və qaşınma hissi",
+                     "Ağız boşluğunda xoşagəlməz qoxu", "Cərrahi əməliyyatdan sonra"],
+                    ["As an aid in infectious inflammatory diseases of the upper respiratory tract: tonsillitis, pharyngitis, laryngitis, aphonia, dysphonia", "Oropharyngeal infections",
+                     "Rash and ulcerative stomatitis", "Oral thrush (candidiasis) in newborns", "Gingivitis, periodontosis", "Sore and itchy throat",
+                     "Unpleasant breath", "After surgery"],
+                    ["Как вспомогательное средство при инфекционно-воспалительных заболеваниях верхних дыхательных путей: тонзиллит, фарингит, ларингит, афония, дисфония", "Орофарингеальные инфекции",
+                     "Сыпные и язвенные стоматиты", "Молочница (кандидоз) полости рта у новорождённых", "Гингивит, пародонтоз", "Боль и зуд в горле",
+                     "Неприятный запах изо рта", "После хирургических операций"]),
+             dose=T(["Daxilə qəbul olunur (qəbul vaxtı üçün qablaşdırmadakı yazıya baxın).", "0–6 ay: 1 dozadan gündə 1–2 dəfə.", "6–12 ay: 1–2 dozadan gündə 1–2 dəfə.",
+                     "1–3 yaş: 2 dozadan gündə 3 dəfə.", "3–6 yaş: 2 dozadan gündə 3–4 dəfə.", "6 yaş və böyüklər: 1–2 dozadan gündə 5–6 dəfə, yəni hər 3–4 saatdan bir püskürtmək məsləhətdir.", "Tövsiyə edilən sutkalıq dozanı keçməyin."],
+                    ["Taken orally (see the packaging photos for the timing relative to meals).", "0–6 months: 1 dose 1–2 times a day.", "6–12 months: 1–2 doses 1–2 times a day.",
+                     "1–3 years: 2 doses 3 times a day.", "3–6 years: 2 doses 3–4 times a day.", "6 years and older: 1–2 doses 5–6 times a day, i.e. every 3–4 hours.", "Do not exceed the recommended daily dose."],
+                    ["Принимается внутрь (время приёма относительно еды см. на фото упаковки).", "0–6 месяцев: 1 доза 1–2 раза в день.", "6–12 месяцев: 1–2 дозы 1–2 раза в день.",
+                     "1–3 года: 2 дозы 3 раза в день.", "3–6 лет: 2 дозы 3–4 раза в день.", "С 6 лет и взрослые: 1–2 дозы 5–6 раз в день, то есть каждые 3–4 часа.", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=T(["Etiketdə əks göstəriş qeyd olunmayıb — istifadədən əvvəl həkimlə məsləhətləşin."], ["No contraindications are listed on the label — consult a doctor before use."], ["На этикетке противопоказания не указаны — перед применением проконсультируйтесь с врачом."]),
+             storage=T("18–25 °C temperaturda, birbaşa istilik və günəş şüası düşməyən, uşaqların əli çatmayan yerdə.", "At 18–25 °C, away from direct heat and sunlight and out of reach of children.", "При температуре 18–25 °C, вдали от прямого тепла и солнечных лучей, в недоступном для детей месте."),
+             shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine", series="098", made="21.11.2025", exp="21.11.2028", reg="", extra="",
+             gallery=[("fargimer-qutu.jpg", "Fargimer — " + box(0)), ("fargimer-terkib.jpg", comp()), ("fargimer-gostericiler.jpg", T("İstifadə sahəsi, saxlanma və tarixlər", "Uses, storage and dates", "Применение, хранение и даты")),
+                      ("fargimer-vereq.jpg", leaf(" (1)")), ("fargimer-vereq2.jpg", leaf(" (2)"))]),
+        dict(slug="maqnimer", name="Maqnimer", cat="vitamin", kind=BAQM(), medical=False,
+             short=T("Maqnezium və B vitaminlərinin əlavə mənbəyi — 30 kapsul.", "An additional source of magnesium and B vitamins — 30 capsules.", "Дополнительный источник магния и витаминов группы B — 30 капсул."),
+             form=T("Kapsul", "Capsule", "Капсулы"),
+             pack=T("3×10 (№30) blister, karton qutu", "3×10 (No. 30) blister, cardboard box", "3×10 (№30) блистер, картонная коробка"),
+             card="maqnimer-card.jpg", head="maqnimer-qutu.jpg",
+             comp_title=T("1 kapsulun tərkibi", "Composition per capsule", "Состав на 1 капсулу"),
+             ing=[(("Maqnezium laktat (Maqnezium 56,5 mq)", "Magnesium lactate (Magnesium 56.5 mg)", "Лактат магния (магний 56,5 мг)"), "Magnesium Lactate", "470 mq"),
+                  (("Vitamin B1 (Tiamin)", "Vitamin B1 (Thiamine)", "Витамин B1 (тиамин)"), "Thiamine", "5 mq"),
+                  (("Vitamin B6 (Piridoksin hidroxlorid)", "Vitamin B6 (Pyridoxine hydrochloride)", "Витамин B6 (пиридоксина гидрохлорид)"), "Pyridoxine hydrochloride", "5 mq")],
+             excip=T("Maltodekstrin, maqnezium stearat, silikon dioksid, jelatin.", "Maltodextrin, magnesium stearate, silicon dioxide, gelatin.", "Мальтодекстрин, стеарат магния, диоксид кремния, желатин."),
+             indication=T("Maqnezium və B vitaminin əlavə mənbəyi kimi tövsiyə olunan vasitə.", "Recommended as an additional source of magnesium and B vitamins.", "Рекомендуется как дополнительный источник магния и витаминов группы B."),
+             dose=T(["Böyüklər: 1 kapsul gündə 1 dəfə.", "Digər hallarda həkim məsləhəti ilə qəbul edilməlidir.", "Tövsiyə olunan sutkalıq dozanı keçməyin."],
+                    ["Adults: 1 capsule once a day.", "In other cases, only on a doctor's advice.", "Do not exceed the recommended daily dose."],
+                    ["Взрослым: 1 капсула 1 раз в день.", "В остальных случаях — только по рекомендации врача.", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=CAUTION_SENS(), storage=STORE_LO(), shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine",
+             series="106", made="01.11.2025", exp="01.11.2028", reg="", extra="",
+             gallery=[("maqnimer-qutu.jpg", "Maqnimer — " + box(0)), ("maqnimer-terkib.jpg", comp()), ("maqnimer-tarix.jpg", T("Doza, seriya və tarixlər", "Dosage, batch and dates", "Дозировка, серия и даты")),
+                      ("maqnimer-yan.jpg", side()), ("maqnimer-vereq.jpg", leaf(" (1)")), ("maqnimer-vereq2.jpg", leaf(" (2)"))]),
+        dict(slug="metabomer", name="Metabomer", cat="vitamin", kind=BAQM(), medical=False,
+             short=T("Amin turşuları və C vitamini kompleksi — 50 ml damcı.", "An amino-acid and vitamin C complex — 50 ml drops.", "Комплекс аминокислот и витамина C — капли 50 мл."),
+             form=T("Daxilə qəbul üçün məhlul-damcı", "Oral solution (drops)", "Раствор-капли для приёма внутрь"),
+             pack=T("50 ml şüşə flakon, karton qutu", "50 ml glass vial, cardboard box", "Стеклянный флакон 50 мл, картонная коробка"),
+             card="metabomer-card.jpg", head="metabomer-qutu.jpg",
+             comp_title=T("2 ml-in tərkibi", "Composition per 2 ml", "Состав на 2 мл"),
+             ing=meta_ing,
+             excip=T("Deionizə su, qliserol, sukraloza, moruq ətri, natrium benzoat, kalium sorbat, sitrik turşusu.", "Deionized water, glycerol, sucralose, raspberry flavour, sodium benzoate, potassium sorbate, citric acid.", "Деионизированная вода, глицерин, сукралоза, аромат малины, бензоат натрия, сорбат калия, лимонная кислота."),
+             indication=T("Amin turşularının və C vitamininin əlavə mənbəyi kimi tövsiyə olunan vasitə.", "Recommended as an additional source of amino acids and vitamin C.", "Рекомендуется как дополнительный источник аминокислот и витамина C."),
+             dose=T(["4 yaşdan yuxarı uşaqlar: 2 ml (40 damcı) gündə 1 dəfə.", "Tövsiyə edilən sutkalıq dozanı keçməyin."], ["Children over 4 years: 2 ml (40 drops) once a day.", "Do not exceed the recommended daily dose."], ["Дети старше 4 лет: 2 мл (40 капель) 1 раз в день.", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=CAUTION_SENS(), storage=STORE_HI(), shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine",
+             series="", made="", exp="", reg="", extra="",
+             gallery=[("metabomer-qutu.jpg", "Metabomer — " + box(0)), ("metabomer-terkib.jpg", comp()), ("metabomer-yan.jpg", side()),
+                      ("metabomer-vereq.jpg", leaf(" (1)")), ("metabomer-vereq2.jpg", leaf(" (2)"))]),
+        dict(slug="vipomer-uro", name="Vipomer-Uro", cat="sidik", kind=BAQM(), medical=False,
+             short=T("Sidik-ifrazat sisteminin fəaliyyətini yaxşılaşdırmaq üçün — 30 kapsul.", "To support the function of the urinary system — 30 capsules.", "Для улучшения функции мочевыделительной системы — 30 капсул."),
+             form=T("Kapsul", "Capsule", "Капсулы"),
+             pack=T("N30 kapsul (2×15) blister, içlik vərəqəsi ilə karton qutuda", "30 capsules (2×15) blister, in a cardboard box with a leaflet", "30 капсул (2×15) блистер, в картонной коробке с вкладышем"),
+             card="vipomer-card.jpg", head="vipomer-qutu.jpg",
+             comp_title=T("1 kapsulun tərkibi", "Composition per capsule", "Состав на 1 капсулу"),
+             ing=[(("Adi mərcanı meyvəsinin ekstraktı", "Cranberry fruit extract", "Экстракт плодов клюквы"), "Vaccinium oxycoccos fruit extract", "250 mq"),
+                  (("D-mannoza", "D-mannose", "D-манноза"), "D-mannose", "200 mq"), (("Kalium sitrat", "Potassium citrate", "Цитрат калия"), "Potassium citrate", "10 mq"),
+                  (("Maqnezium sitrat", "Magnesium citrate", "Цитрат магния"), "Magnesium citrate", "10 mq"), (("Natrium sitrat", "Sodium citrate", "Цитрат натрия"), "Sodium citrate", "30 mq")],
+             excip=T("Jelatin, qarğıdalı nişastası.", "Gelatin, corn starch.", "Желатин, кукурузный крахмал."),
+             indication=T("Sidik-ifrazat sisteminin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.", "Recommended to support the function of the urinary system.", "Рекомендуется для улучшения функции мочевыделительной системы."),
+             dose=T(["Böyüklər: 1 kapsul gündə 1 dəfə.", "Tövsiyə edilən sutkalıq dozanı keçməyin."], ["Adults: 1 capsule once a day.", "Do not exceed the recommended daily dose."], ["Взрослым: 1 капсула 1 раз в день.", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=T(["Məhsulun tərkibindəki hər hansı komponentə qarşı fərdi həssaslıq."], ["Individual sensitivity to any component of the product."], ["Индивидуальная чувствительность к любому из компонентов продукта."]),
+             storage=STORE_HI(), shelf=SH3(),
+             mfr=T("FITO LAB MMC (Azərbaycan, Abşeron r-nu, Saray qəs., AZ0121)", "FITO LAB MMC (Azerbaijan, Absheron district, Saray settlement, AZ0121)", "FITO LAB MMC (Азербайджан, Абшеронский р-н, пос. Сарай, AZ0121)"),
+             brand="POLSHA PHARMA SP.Z.O.O., Jana Pawla str/II 3bf/1 05-091 Zabki", series="UT0412", made="01.2025", exp="01.2028", reg="01-Q-00589", extra="QOST/ГОСТ 23058-89",
+             gallery=[("vipomer-qutu.jpg", "Vipomer-Uro — " + box(0)), ("vipomer-terkib.jpg", comp()), ("vipomer-vereq.jpg", leaf()),
+                      ("vipomer-istehsalci.jpg", T("İstehsalçı və sertifikatlar", "Manufacturer and certificates", "Производитель и сертификаты")), ("vipomer-tarix.jpg", T("Seriya, istehsal və son istifadə tarixi", "Batch, production and expiry date", "Серия, дата производства и срок годности"))]),
+        dict(slug="venomer", name="Venomer", cat="vitamin", kind=BAQM(), medical=False,
+             short=T("Dəmirin əlavə mənbəyi — fol turşusu, C və B12 ilə, 100 ml sirop.", "An additional source of iron with folic acid, vitamin C and B12 — 100 ml.", "Дополнительный источник железа с фолиевой кислотой, витамином C и B12 — 100 мл."),
+             form=T("Daxilə qəbul üçün məhlul", "Oral solution", "Раствор для приёма внутрь"),
+             pack=T("100 ml şüşə flakon, karton qutu", "100 ml glass vial, cardboard box", "Стеклянный флакон 100 мл, картонная коробка"),
+             card="venomer-card.jpg", head="venomer-qutu.jpg",
+             comp_title=T("5 ml-in tərkibi", "Composition per 5 ml", "Состав на 5 мл"),
+             ing=[(("Dəmir fumarat (Dəmir – 11,2 mq)", "Ferrous fumarate (iron – 11.2 mg)", "Фумарат железа (железо – 11,2 мг)"), "Ferrous fumarate", "35 mq"),
+                  (("Fol turşusu", "Folic acid", "Фолиевая кислота"), "Folic acid", "350 mkq"), (("Vitamin C", "Vitamin C", "Витамин C"), "Vitamin C", "80 mq"), (("Vitamin B12", "Vitamin B12", "Витамин B12"), "Vitamin B12", "3 mkq")],
+             excip=T("Kalium sorbat, natrium benzoat, deionlaşdırılmış su.", "Potassium sorbate, sodium benzoate, deionized water.", "Сорбат калия, бензоат натрия, деионизированная вода."),
+             indication=T("Dəmirin əlavə mənbəyi kimi tövsiyə olunan vasitə.", "Recommended as an additional source of iron.", "Рекомендуется как дополнительный источник железа."),
+             dose=T(["2–4 yaş: 1.25 ml gündə 1 dəfə.", "4–14 yaş: 2.5 ml gündə 1 dəfə.", "14 yaşdan yuxarı uşaqlar, böyüklər və hamilələr: 5 ml gündə 1 dəfə.", "İstifadədən əvvəl flakonu çalxalayın.", "Tövsiyə edilən sutkalıq dozanı keçməyin."],
+                    ["Ages 2–4: 1.25 ml once a day.", "Ages 4–14: 2.5 ml once a day.", "Over 14, adults and pregnant women: 5 ml once a day.", "Shake the vial before use.", "Do not exceed the recommended daily dose."],
+                    ["2–4 года: 1,25 мл 1 раз в день.", "4–14 лет: 2,5 мл 1 раз в день.", "Старше 14 лет, взрослые и беременные: 5 мл 1 раз в день.", "Перед применением флакон взболтать.", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=CAUTION_SENS(), storage=STORE_HI(), shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine",
+             series="115", made="11.2025", exp="11.2028", reg="", extra="",
+             gallery=[("venomer-qutu.jpg", "Venomer — " + box(0)), ("venomer-terkib.jpg", comp()), ("venomer-yan.jpg", side()),
+                      ("venomer-vereq.jpg", leaf(" (1)")), ("venomer-vereq2.jpg", leaf(" (2)"))]),
+        dict(slug="neframer", name="Neframer", cat="tenefus", kind=TIBBI(), medical=True,
+             short=T("Hipertonik dəniz suyu burun spreyi — 50 ml.", "Hypertonic sea-water nasal spray — 50 ml.", "Назальный спрей с гипертонической морской водой — 50 мл."),
+             form=T("Daxilə qəbul üçün məhlul-sprey", "Spray solution", "Раствор-спрей"),
+             pack=T("50 ml şüşə flakon, karton qutu", "50 ml glass vial, cardboard box", "Стеклянный флакон 50 мл, картонная коробка"),
+             card="neframer-card.jpg", head="neframer-qutu.jpg",
+             comp_title=T("Tərkibi", "Composition", "Состав"),
+             ing=[(("Hipertonik dəniz suyu məhlulu", "Hypertonic sea water solution", "Раствор гипертонической морской воды"), "", "2.2 %")],
+             excip=T("Deionizə su, kalium sorbat, natrium benzoat.", "Deionized water, potassium sorbate, sodium benzoate.", "Деионизированная вода, сорбат калия, бензоат натрия."),
+             indication=T("Burun boşluğunun gigiyenası üçün nəzərdə tutulub.", "Intended for the hygiene of the nasal cavity.", "Предназначен для гигиены полости носа."),
+             about=T("Etiketdə «dərman vasitəsi deyildir, gigiyenik vasitədir» yazılıb; qutunun arxa üzündə isə «tibbi vasitədir» qeyd olunub.",
+                     "The label says \"not a medicine, a hygiene product\"; the back of the box also states \"medical device\".",
+                     "На этикетке указано «не лекарственное средство, гигиеническое средство»; на обратной стороне коробки — «медицинское изделие»."),
+             uses=T(["Burun tıxanıqlığının azaldılması", "Burun selikli qişasının nəmləndirilməsi", "Toz, allergiya, mikrob və digər kirlərin mexaniki təmizlənməsi", "Soyuqdəymə və qrip zamanı burun yollarının gigiyenası", "Ətraf mühitin təsirindən (quru hava, kondisioner, tozlu mühit) qorunma"],
+                    ["Reducing nasal congestion", "Moisturising the nasal mucosa", "Mechanical cleansing of dust, allergens, microbes and other impurities", "Nasal hygiene during colds and flu", "Protection from environmental effects (dry air, air conditioning, dusty environments)"],
+                    ["Уменьшение заложенности носа", "Увлажнение слизистой оболочки носа", "Механическое очищение от пыли, аллергенов, микробов и других загрязнений", "Гигиена носовых ходов при простуде и гриппе", "Защита от влияния окружающей среды (сухой воздух, кондиционеры, запылённая среда)"]),
+             dose=T(["İstifadədən əvvəl flakonu çalxalayın.", "Buruna püskürtmə yolu ilə istifadə olunur.", "Gündə bir neçə dəfə tətbiq oluna bilər.", "İstifadədən əvvəl təlimatı oxuyun."],
+                    ["Shake the vial before use.", "Use by spraying into the nose.", "May be applied several times a day.", "Read the instructions before use."],
+                    ["Перед применением флакон взболтать.", "Применяется путём распыления в нос.", "Можно применять несколько раз в день.", "Перед применением прочтите инструкцию."]),
+             contra=T(["Etiketdə əks göstəriş qeyd olunmayıb — istifadədən əvvəl həkimlə məsləhətləşin."], ["No contraindications are listed on the label — consult a doctor before use."], ["На этикетке противопоказания не указаны — перед применением проконсультируйтесь с врачом."]),
+             storage=T("25 °C-dən yüksək olmayan temperaturda, quru, sərin və uşaqların əli çatmayan yerdə.", "At a temperature not above 25 °C, in a dry, cool place out of reach of children.", "При температуре не выше 25 °C, в сухом, прохладном и недоступном для детей месте."),
+             shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine", series="105", made="21.11.2025", exp="21.11.2028", reg="", extra="",
+             gallery=[("neframer-qutu.jpg", "Neframer — " + box(0)), ("neframer-terkib.jpg", comp()), ("neframer-yan.jpg", side()),
+                      ("neframer-vereq.jpg", leaf(" (1)")), ("neframer-vereq2.jpg", leaf(" (2)"))]),
+        dict(slug="starbone-calcium", name="StarBone Calcium", cat="oynaq", kind=BAQM(), medical=False,
+             short=T("Kalsium, sink, D3 və K1 kompleksi — 60 kapsul.", "A calcium, zinc, D3 and K1 complex — 60 capsules.", "Комплекс кальция, цинка, D3 и K1 — 60 капсул."),
+             form=T("Kapsul", "Capsule", "Капсулы"),
+             pack=T("№60 (6×10) blister, karton qutu", "No. 60 (6×10) blister, cardboard box", "№60 (6×10) блистер, картонная коробка"),
+             card="starbone-card.jpg", head="starbone-qutu.jpg",
+             comp_title=T("1 kapsulun tərkibi", "Composition per capsule", "Состав на 1 капсулу"),
+             ing=[(("Kalsium karbonat (120 mq elementar kalsium)", "Calcium carbonate (120 mg elemental calcium)", "Карбонат кальция (120 мг элементарного кальция)"), "Calcium carbonate", "300 mq"),
+                  (("Sink oksid (4 mq elementar sink)", "Zinc oxide (4 mg elemental zinc)", "Оксид цинка (4 мг элементарного цинка)"), "Zinc oxide", "5 mq"),
+                  (("Vitamin D3 (Xolekalsiferol)", "Vitamin D3 (Cholecalciferol)", "Витамин D3 (холекальциферол)"), "Cholecalciferol", "2.5 mkq"),
+                  (("Vitamin K1 (Fitomenadion)", "Vitamin K1 (Phytomenadione)", "Витамин K1 (фитоменадион)"), "Phytomenadione", "25 mkq")],
+             excip=T("Mikrokristallik sellüloza, maqnezium stearat.", "Microcrystalline cellulose, magnesium stearate.", "Микрокристаллическая целлюлоза, стеарат магния."),
+             indication=T("Dayaq-hərəkət sisteminin fəaliyyətini yaxşılaşdırmaq məqsədilə tövsiyə olunan vasitə.", "Recommended to support the function of the musculoskeletal system.", "Рекомендуется для улучшения функции опорно-двигательной системы."),
+             dose=T(["12 yaşdan yuxarı uşaqlar və böyüklər: 1 kapsul gündə 1 dəfə (qəbul vaxtı üçün qutudakı yazıya baxın).", "Tövsiyə edilən sutkalıq dozanı keçməyin."],
+                    ["Children over 12 and adults: 1 capsule once a day (see the packaging for the timing).", "Do not exceed the recommended daily dose."],
+                    ["Дети старше 12 лет и взрослые: 1 капсула 1 раз в день (время приёма см. на упаковке).", "Не превышайте рекомендуемую суточную дозу."]),
+             contra=CAUTION_SENS(), storage=STORE_LO(), shelf=SH3(), mfr=EVA(), brand="EVA MED Medicine",
+             series="150", made="12.2025", exp="12.2028", reg="", extra="",
+             gallery=[("starbone-qutu.jpg", "StarBone Calcium — " + box(0)), ("starbone-terkib.jpg", comp()), ("starbone-yan.jpg", side()), ("starbone-vereq.jpg", leaf())]),
+    ]
+
+
+def products():
+    return products_base() + products_new()
+
+
 def cats():
     return [("all", T("Hamısı", "All", "Все")), ("urek", T("Ürək-damar", "Cardiovascular", "Сердце и сосуды")),
-            ("vitamin", T("Vitaminlər", "Vitamins", "Витамины")), ("immun", T("İmmunitet", "Immunity", "Иммунитет")),
-            ("oynaq", T("Oynaq və əzələ", "Joints & muscles", "Суставы и мышцы"))]
+            ("vitamin", T("Vitaminlər və minerallar", "Vitamins & minerals", "Витамины и минералы")), ("immun", T("İmmunitet", "Immunity", "Иммунитет")),
+            ("oynaq", T("Sümük, oynaq və əzələ", "Bones, joints & muscles", "Кости, суставы и мышцы")),
+            ("tenefus", T("Boğaz və burun", "Throat & nose", "Горло и нос")), ("sidik", T("Sidik sistemi", "Urinary system", "Мочевыделительная система"))]
 
 
 def rx():
@@ -331,7 +566,7 @@ def header(active, page):
 
 def footer():
     fl = "".join(f'<li><a href="{h}">{nav_label(t)}</a></li>' for h, t in NAV)
-    pl = "".join(f'<li><a href="derman-{p["slug"]}.html">{p["name"]}</a></li>' for p in products())
+    pl = "".join(f'<li><a href="derman-{p["slug"]}.html">{p["name"]}</a></li>' for p in products()[:6])
     P = pfx()
     return f"""</main>
 <footer class="site"><div class="container">
@@ -398,8 +633,8 @@ def jsonld():
 def home():
     P = pfx()
     prods = products()
-    feat = "".join(product_card(p) for p in prods)
-    imgs = "".join(f'<img src="{P}assets/img/{p["card"]}" alt="{p["name"]}" loading="lazy">' for p in prods)
+    feat = "".join(product_card(p) for p in prods[:4])
+    imgs = "".join(f'<img src="{P}assets/img/{p["card"]}" alt="{p["name"]}" loading="lazy">' for p in prods[:4])
     services = [
         ("pill", T("Məhsul seçimi", "Product selection", "Подбор продуктов"),
          T("Ürək-damar sağlamlığı, vitaminlər, immunitet və oynaq üçün məhsullar.", "Products for heart health, vitamins, immunity and joints.", "Продукты для здоровья сердца, витамины, иммунитет и суставы.")),
@@ -484,7 +719,7 @@ def about():
       'Для каждого продукта открыто указаны состав, дозировка, производитель и срок годности. На страницах товаров размещены фотографии упаковки и таблица состава, чтобы вы могли принять взвешенное решение.')}</p>
 <a class="btn btn-green" href="dermanlar.html">{T('Məhsullarımıza baxın', 'See our products', 'Смотреть товары')}</a></div>
 <div class="reveal"><div class="card" style="padding:12px;background:var(--green-soft)"><div class="grid g2" style="gap:10px">
-{"".join(f'<img src="{P}assets/img/{p["card"]}" alt="{p["name"]}" style="background:#fff;border-radius:12px;aspect-ratio:1;object-fit:contain;padding:6px" loading="lazy">' for p in prods)}
+{"".join(f'<img src="{P}assets/img/{p["card"]}" alt="{p["name"]}" style="background:#fff;border-radius:12px;aspect-ratio:1;object-fit:contain;padding:6px" loading="lazy">' for p in prods[:4])}
 </div></div></div></div></section>
 
 <section class="section alt"><div class="container"><div class="section-head center"><span class="eyebrow">{T('Dəyərlərimiz', 'Our values', 'Наши ценности')}</span><h2>{T('Nəyə əsaslanırıq', 'What we stand for', 'На чём мы стоим')}</h2></div>
@@ -551,7 +786,19 @@ def detail(p):
     if p["extra"]:
         ids.append(p["extra"])
     ids_html = f'<li>{e(" · ".join(ids))}</li>' if ids else ""
-    others = "".join(product_card(o) for o in products() if o["slug"] != p["slug"])
+    parts = []
+    if p["series"]:
+        parts.append(f"<b>{T('Seriya', 'Batch', 'Серия')}:</b> {p['series']}")
+    if p["made"]:
+        parts.append(f"<b>{T('İstehsal', 'Produced', 'Произведено')}:</b> {p['made']}")
+    if p["exp"]:
+        parts.append(f"<b>{T('Son istifadə', 'Expires', 'Годен до')}:</b> {p['exp']}")
+    batch_html = f"<li>{' · '.join(parts)}</li>" if parts else ""
+    about_html = f'<div class="info-block"><h3>{T("Məhsul haqqında", "About the product", "О продукте")}</h3><p>{p["about"]}</p></div>' if p.get("about") else ""
+    uses_html = f'<div class="info-block"><h3>{T("İstifadə sahəsi", "Areas of use", "Область применения")}</h3>{li(p["uses"])}</div>' if p.get("uses") else ""
+    rest = [o for o in products() if o["slug"] != p["slug"]]
+    rest.sort(key=lambda o: o["cat"] != p["cat"])
+    others = "".join(product_card(o) for o in rest[:3])
     warn = (T("Tibbi vasitədir, dərman vasitəsi deyil.", "A medical device, not a medicine.", "Медицинское изделие, не лекарственное средство.") if p["medical"]
             else T("Dərman vasitəsi deyil. Bioloji aktiv qida məhsuludur.", "Not a medicine. A dietary supplement.", "Не является лекарственным средством. Биологически активная добавка."))
     crumb = f'<a href="dermanlar.html">{T("Dərmanlar", "Medicines", "Препараты")}</a>'
@@ -571,6 +818,7 @@ def detail(p):
 <div class="fact"><small>{T('Aptekdən buraxılma', 'Pharmacy dispensing', 'Условия отпуска')}</small><b>{rx()}</b></div>
 <div class="fact"><small>{T('Yararlılıq müddəti', 'Shelf life', 'Срок годности')}</small><b>{p['shelf']}</b></div></div>
 
+{about_html}{uses_html}
 <div class="info-block"><h3>{T('Tərkibi', 'Ingredients', 'Состав')}</h3>
 <table class="ing"><caption style="caption-side:top;padding-bottom:8px">{p['comp_title']}</caption><thead><tr><th>{T('Maddə', 'Ingredient', 'Вещество')}</th><th style="text-align:right">{T('Miqdar', 'Amount', 'Количество')}</th></tr></thead><tbody>{rows}</tbody></table></div>
 <div class="info-block"><h3>{T('Köməkçi maddələr', 'Excipients', 'Вспомогательные вещества')}</h3><p>{p['excip']}</p></div>
@@ -579,7 +827,7 @@ def detail(p):
 <div class="info-block"><h3>{T('Saxlanma şəraiti', 'Storage conditions', 'Условия хранения')}</h3><p>{p['storage']}</p></div>
 <div class="info-block"><h3>{T('İstehsalçı və məlumatlar', 'Manufacturer & details', 'Производитель и данные')}</h3><ul>
 <li><b>{T('İstehsalçı', 'Manufacturer', 'Производитель')}:</b> {e(p['mfr'])}</li><li><b>{T('Ticarət nişanı', 'Trademark', 'Торговая марка')}:</b> {e(p['brand'])}</li>
-<li><b>{T('Seriya', 'Batch', 'Серия')}:</b> {p['series']} · <b>{T('İstehsal', 'Produced', 'Произведено')}:</b> {p['made']} · <b>{T('Son istifadə', 'Expires', 'Годен до')}:</b> {p['exp']}</li>{ids_html}</ul></div>
+{batch_html}{ids_html}</ul></div>
 
 <div class="notice" style="margin-top:26px"><strong>{warn}</strong>
 {T('Tövsiyə edilən sutkalıq dozanı keçməyin. Uşaqların əli çatmayan yerdə saxlayın. Hamiləlik və laktasiya dövründə, xəstəlik və ya dərman istifadəsi zamanı həkimlə məsləhətləşin.',
