@@ -273,14 +273,6 @@
 
   // custom cursor + magnetic buttons
   if (fine && !reduce) {
-    var cur = document.createElement('div'); cur.className = 'cursor'; document.body.appendChild(cur);
-    var cx = 0, cy = 0, tx = 0, ty = 0;
-    document.addEventListener('pointermove', function (e) {
-      tx = e.clientX; ty = e.clientY; cur.classList.add('on');
-      cur.classList.toggle('big', !!e.target.closest('a,button,.chip,.shot,summary,select,label'));
-    });
-    document.addEventListener('pointerleave', function () { cur.classList.remove('on'); });
-    (function loop() { cx += (tx - cx) * .2; cy += (ty - cy) * .2; cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px)'; requestAnimationFrame(loop); })();
     $$('.btn,.fab a,.theme-btn').forEach(function (b) {
       b.classList.add('mag');
       b.addEventListener('pointermove', function (e) {

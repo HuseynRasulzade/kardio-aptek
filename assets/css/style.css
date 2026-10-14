@@ -223,7 +223,7 @@ table.ing td small{color:var(--muted);display:block;font-weight:400}
 .lb .x{top:18px;right:18px}.lb .prev{left:18px;top:50%}.lb .next{right:18px;top:50%}
 
 /* ---------- blocks ---------- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--card);border:1px solid var(--line);border-radius:28px;overflow:hidden;box-shadow:var(--shadow)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;background:var(--card);border:1px solid var(--line);border-radius:28px;overflow:hidden;box-shadow:var(--shadow)}
 .stat{text-align:center;padding:36px 20px;position:relative}
 .stat+.stat::before{content:"";position:absolute;left:0;top:25%;bottom:25%;width:1px;background:var(--line)}
 .stat b{display:block;font:800 clamp(2.2rem,4vw,3.2rem) 'Manrope',sans-serif;letter-spacing:-.03em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}

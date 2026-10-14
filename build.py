@@ -646,7 +646,7 @@ def divider():
 
 def stats_block():
     n = len(products())
-    items = [(str(n), T("məhsul", "products", "товаров")), ("3", T("dildə sayt", "languages", "языка сайта")),
+    items = [(str(n), T("məhsul", "products", "товаров")), 
              ("09–22", T("hər gün açıq", "open every day", "открыты ежедневно")), ("2024", T("ildən fəaliyyətdə", "founded", "год основания"))]
     cells = "".join(f'<div class="stat reveal"><b{(" data-count=" + chr(34) + a + chr(34)) if a.isdigit() else ""}>{a}</b><span>{b}</span></div>' for a, b in items)
     return f'<section class="section" style="padding-top:0"><div class="container"><div class="stats">{cells}</div></div></section>'
