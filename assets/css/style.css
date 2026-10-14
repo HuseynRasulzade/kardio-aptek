@@ -568,3 +568,5 @@ h1 em,h2 em,.display-i{font-style:italic;font-weight:600}
   .cmp-tbl{font-size:.8rem}
 }
 @media(prefers-reduced-motion:reduce){.scene,.slab-in,.orbit,.scroll-ecg .live{animation:none!important}.reveal.from-left,.reveal.from-right{transform:none}}
+.stat b.t{font-size:clamp(1.7rem,3vw,2.5rem);padding:.55rem 0;white-space:nowrap}
+.stats{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
