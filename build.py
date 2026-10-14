@@ -14,9 +14,9 @@ MAPQ = "Qara Qarayev metrostansiyası, S. Mirzəyev küçəsi, Bakı, Azerbaijan
 MAP_LINK = "https://www.google.com/maps/search/?api=1&query=" + MAPQ.replace(" ", "+")
 MAP_DIR = "https://www.google.com/maps/dir/?api=1&destination=" + MAPQ.replace(" ", "+")
 
-LOGO = ('<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0f766e"/>'
+LOGO = ('<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="kg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ee4d6e"/><stop offset="1" stop-color="#8a0f2f"/></linearGradient></defs><rect width="48" height="48" rx="12" fill="url(#kg)"/>'
         '<path d="M24 38S9 29.5 9 19.2C9 14.6 12.4 11 16.7 11c3 0 5.6 1.7 7.3 4.3C25.700 12.700 28.300 11 31.300 11 35.600 11 39 14.600 39 19.200 39 29.500 24 38 24 38Z" fill="#fff"/>'
-        '<path d="M12 23h7l2.500-5 4 10 2.500-5H36" fill="none" stroke="#d92d45" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+        '<path d="M12 23h7l2.500-5 4 10 2.500-5H36" fill="none" stroke="#b3123a" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/></svg>')
 
 ICON = {
     "pill": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5-7-7a4.950 4.950 0 0 1 7-7l7 7a4.950 4.950 0 0 1-7 7Z"/><path d="m8.500 8.500 7 7"/></svg>',
@@ -535,7 +535,7 @@ def head(title, desc, page, extra=""):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(full)}</title>
 <meta name="description" content="{e(desc)}">
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#5e0b22">
 <meta property="og:title" content="{e(full)}"><meta property="og:description" content="{e(desc)}"><meta property="og:type" content="website"><meta property="og:locale" content="{OG_LOCALE[LANG]}">
 {alts}
 <link rel="icon" href="{P}favicon.svg" type="image/svg+xml">
@@ -546,6 +546,27 @@ def head(title, desc, page, extra=""):
 </head>"""
 
 
+def ecg():
+    d = "M0 60 H180 L205 60 L225 18 L250 98 L272 40 L290 60 H520 L545 60 L565 22 L590 96 L612 44 L630 60 H900 L925 60 L945 20 L970 96 L992 42 L1010 60 H1300 L1325 60 L1345 24 L1370 94 L1392 44 L1410 60 H1600"
+    return f'<svg class="ecg" viewBox="0 0 1600 120" preserveAspectRatio="none" aria-hidden="true"><path class="ghost" d="{d}"/><path d="{d}"/></svg>'
+
+
+def marquee():
+    items = T(["Ürək sağlamlığı", "Tərkibi açıq göstərilir", "Peşəkar əczaçı məsləhəti", "Hər gün 09:00 – 22:00", "Qara Qarayev metrosu yaxınlığı", "AZ · EN · RU", "Keyfiyyətli məhsullar", "Seriya və tarix yoxlanılır"],
+              ["Heart health", "Ingredients clearly listed", "Professional pharmacist advice", "Every day 09:00 – 22:00", "Near Qara Qarayev metro", "AZ · EN · RU", "Quality products", "Batch and dates checked"],
+              ["Здоровье сердца", "Состав указан открыто", "Консультации фармацевта", "Ежедневно 09:00 – 22:00", "Рядом с метро «Гара Гараев»", "AZ · EN · RU", "Качественные товары", "Серии и сроки проверяются"])
+    row = "".join(f"<span>{x}</span>" for x in items)
+    return f'<div class="marquee" aria-hidden="true"><div class="track">{row}{row}</div></div>'
+
+
+def stats_block():
+    n = len(products())
+    items = [(str(n), T("məhsul", "products", "товаров")), ("3", T("dildə sayt", "languages", "языка сайта")),
+             ("09–22", T("hər gün açıq", "open every day", "открыты ежедневно")), ("2024", T("ildən fəaliyyətdə", "founded", "год основания"))]
+    cells = "".join(f'<div class="stat reveal"><b>{a}</b><span>{b}</span></div>' for a, b in items)
+    return f'<section class="section" style="padding-top:0"><div class="container"><div class="stats">{cells}</div></div></section>'
+
+
 CUR = ' aria-current="page"'
 PHONE_ICON = ICON["phone"].replace("<svg", '<svg width="16" height="16"')
 
@@ -554,6 +575,7 @@ def header(active, page):
     links = "".join(f'<li><a href="{h}"{CUR if h == active else ""}>{nav_label(t)}</a></li>' for h, t in NAV)
     call = T("Zəng et", "Call us", "Позвонить")
     return f"""<body data-close="{T('Bağla', 'Close', 'Закрыть')}" data-prev="{T('Əvvəlki', 'Previous', 'Назад')}" data-next="{T('Növbəti', 'Next', 'Далее')}">
+<div class="progress" aria-hidden="true"></div>
 <a class="skip" href="#main">{T('Əsas məzmuna keç', 'Skip to main content', 'Перейти к содержимому')}</a>
 <header class="site"><div class="container">
 <a class="logo" href="index.html" aria-label="{SITE}">{LOGO}<span>Kardio <b>Aptek</b></span></a>
@@ -599,7 +621,7 @@ def page_hero(title, sub, crumbs=None):
     c = ""
     if crumbs:
         c = f'<div class="crumbs"><a href="index.html">{T("Ana səhifə", "Home", "Главная")}</a> / ' + " / ".join(crumbs) + "</div>"
-    return f'<section class="page-hero"><div class="container">{c}<h1>{title}</h1><p>{sub}</p></div></section>'
+    return f'<section class="page-hero"><div class="container">{c}<h1>{title}</h1><p>{sub}</p></div>{ecg()}</section>'
 
 
 def cta_block():
@@ -659,7 +681,9 @@ def home():
 <div class="actions"><a class="btn btn-primary" href="dermanlar.html">{T('Məhsullara bax', 'View products', 'Смотреть товары')}</a><a class="btn btn-outline" href="tel:{PHONE_RAW}">📞 {PHONE_SHOW}</a></div>
 <div class="hero-badges"><span>{T('Tərkibi açıq göstərilir', 'Ingredients clearly listed', 'Состав указан открыто')}</span><span>{T('Peşəkar məsləhət', 'Professional advice', 'Профессиональные советы')}</span><span>{hours()}</span></div></div>
 <div class="hero-visual"><div class="stack">{imgs}</div><div class="pulse">{ICON['ecg']} {T('Sağlam ürək — sağlam həyat', 'Healthy heart — healthy life', 'Здоровое сердце — здоровая жизнь')}</div></div>
-</div></section>
+</div>{ecg()}</section>
+{marquee()}
+{stats_block()}
 
 <section class="section"><div class="container">
 <div class="section-head center"><span class="eyebrow">{T('Məhsullarımız', 'Our products', 'Наши товары')}</span><h2>{T('Seçilmiş məhsullar', 'Featured products', 'Избранные товары')}</h2>
@@ -672,7 +696,7 @@ def home():
 
 <section class="section alt"><div class="container">
 <div class="section-head center"><span class="eyebrow">{T('Xidmətlər', 'Services', 'Услуги')}</span><h2>{T('Niyə Kardio Aptek?', 'Why Kardio Aptek?', 'Почему Kardio Aptek?')}</h2></div>
-<div class="grid g4">{sv}</div></div></section>
+<div class="grid bento">{sv}</div></div></section>
 
 <section class="section"><div class="container">
 <div class="section-head center"><span class="eyebrow">{T('Necə işləyir', 'How it works', 'Как это работает')}</span><h2>{T('Sifariş üç addımda', 'Order in three steps', 'Заказ в три шага')}</h2></div>

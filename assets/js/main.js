@@ -1,4 +1,22 @@
 (function () {
+  // scroll progress + header state
+  var bar = document.querySelector('.progress'), hdr = document.querySelector('header.site');
+  var onScroll = function () {
+    var h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+    if (bar) bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    if (hdr) hdr.classList.toggle('scrolled', h.scrollTop > 20);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  // cursor spotlight on cards
+  document.addEventListener('pointermove', function (e) {
+    var c = e.target.closest && e.target.closest('.card');
+    if (!c) return;
+    var r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
