@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Static site generator for Kardio Aptek. Run: python3 build.py  -> writes *.html next to this file."""
+import json
 import re
 from html import escape as e
 from pathlib import Path
@@ -512,6 +513,84 @@ def rx():
     return T("Reseptsiz", "Over the counter", "Без рецепта")
 
 
+
+# --------------------------------------------------------------------------- interactive data
+KIDS = {"depomer-d3-k2": 2, "laktomer-max": 2, "venomer": 2, "aktimer": 4, "metabomer": 4, "fargimer": 0, "starbone-calcium": 12}
+
+
+def calc_for(slug):
+    """Package-duration calculator data: (total, unit, [(label, per_day)])."""
+    adult = T("Böyüklər", "Adults", "Взрослые")
+    ml, caps, drops = T("ml", "ml", "мл"), T("kapsul", "capsules", "капсул"), T("damcı", "drops", "капель")
+    yr = lambda a: T(f"{a} yaş", f"age {a}", f"{a} лет")
+    table = {
+        "karno-mer": (30, caps, [(adult + " — 1 " + T("kapsul", "capsule", "капсула"), 1)]),
+        "maqnimer": (30, caps, [(adult + " — 1 " + T("kapsul", "capsule", "капсула"), 1)]),
+        "vipomer-uro": (30, caps, [(adult + " — 1 " + T("kapsul", "capsule", "капсула"), 1)]),
+        "starbone-calcium": (60, caps, [(yr("12+") + " — 1 " + T("kapsul", "capsule", "капсула"), 1)]),
+        "depomer-d3-k2": (375, drops, [(yr("2–4") + " — 1 " + drops, 1), (yr("4–14") + " — 2 " + drops, 2), (yr("14+") + " — 4 " + drops, 4)]),
+        "revimer": (150, ml, [(adult + " — 15 " + ml, 15)]),
+        "aktimer": (150, ml, [(yr("4–14") + " — 5 " + ml, 5), (yr("14+") + " — 10 " + ml, 10)]),
+        "laktomer-max": (100, ml, [(yr("2–3") + " — 2.5 " + ml, 2.5), (yr("4–12") + " — 5 " + ml, 5), (yr("12+") + " — 10 " + ml, 10)]),
+        "venomer": (100, ml, [(yr("2–4") + " — 1.25 " + ml, 1.25), (yr("4–14") + " — 2.5 " + ml, 2.5), (yr("14+") + " — 5 " + ml, 5)]),
+        "metabomer": (50, ml, [(yr("4+") + " — 2 " + ml, 2)]),
+    }
+    return table.get(slug)
+
+
+def calc_widget(p):
+    c = calc_for(p["slug"])
+    if not c:
+        return ""
+    total, unit, opts = c
+    options = "".join(f'<option value="{v}">{e(l)}</option>' for l, v in opts)
+    return f"""<div class="calc reveal" data-total="{total}" data-r1="{T('Bir qablaşma təxminən', 'One pack lasts about', 'Одной упаковки хватит примерно на')}" data-r2="{T('gün', 'days', 'дн.')}">
+<div class="calc-head"><span class="eyebrow">{T('Kalkulyator', 'Calculator', 'Калькулятор')}</span><h3>{T('Qablaşma neçə günə çatır?', 'How long does a pack last?', 'На сколько дней хватит упаковки?')}</h3></div>
+<p class="calc-total">{T('Qablaşmada', 'In the pack', 'В упаковке')}: <b>{total} {unit}</b></p>
+<label for="calc-sel">{T('Yaş qrupu və doza', 'Age group and dose', 'Возраст и доза')}</label>
+<select class="input" id="calc-sel">{options}</select>
+<div class="calc-out"><b class="calc-days">–</b><span class="calc-unit">{T('gün', 'days', 'дн.')}</span></div>
+<p class="calc-note">{T('Etiketdəki dozaya əsasən hesablanıb; həkim məsləhətini əvəz etmir.', 'Based on the label dose; does not replace medical advice.', 'Расчёт по дозе на этикетке; не заменяет консультацию врача.')}</p></div>"""
+
+
+def quiz_block():
+    prods = [dict(slug=p["slug"], name=p["name"], cat=p["cat"], kids=KIDS.get(p["slug"]), short=p["short"], url=f"derman-{p['slug']}.html", img=f"{pfx()}assets/img/{p['card']}") for p in products()]
+    data = dict(
+        goal=T("Sizi nə maraqlandırır?", "What are you looking for?", "Что вас интересует?"),
+        who=T("Məhsul kimin üçündür?", "Who is it for?", "Для кого продукт?"),
+        care=T("Hamiləlik, əmizdirmə, xroniki xəstəlik və ya dərman qəbulu varmı?", "Pregnancy, breastfeeding, a chronic illness or regular medication?", "Беременность, кормление грудью, хроническое заболевание или приём лекарств?"),
+        goals=[["urek", T("Ürək və enerji", "Heart & energy", "Сердце и энергия")], ["immun", T("İmmunitet", "Immunity", "Иммунитет")],
+               ["oynaq", T("Sümük, oynaq, əzələ", "Bones, joints, muscles", "Кости, суставы, мышцы")], ["tenefus", T("Boğaz və burun", "Throat & nose", "Горло и нос")],
+               ["sidik", T("Sidik sistemi", "Urinary system", "Мочевыделительная система")], ["vitamin", T("Vitaminlər və minerallar", "Vitamins & minerals", "Витамины и минералы")]],
+        whos=[["adult", T("Böyük (18+)", "Adult (18+)", "Взрослый (18+)")], ["teen", T("Yeniyetmə (12–17)", "Teenager (12–17)", "Подросток (12–17)")], ["child", T("Uşaq (2–11)", "Child (2–11)", "Ребёнок (2–11)")]],
+        yes=T("Bəli", "Yes", "Да"), no=T("Xeyr", "No", "Нет"),
+        title=T("Etiketlərə əsasən uyğun ola bilər", "May be suitable, based on the labels", "Может подойти, исходя из этикеток"),
+        none=T("Bu seçimə uyğun məhsul tapılmadı. Əczaçıdan soruşun.", "No product matches this choice. Ask the pharmacist.", "По этому выбору ничего не найдено. Спросите фармацевта."),
+        doctor=T("Həkimlə məsləhətləşmədən istifadə etməyin.", "Do not use without consulting a doctor.", "Не применяйте без консультации с врачом."),
+        disc=T("Bu seçim yalnız məlumat xarakterlidir və həkim məsləhətini əvəz etmir.", "This selection is informational only and does not replace medical advice.", "Подборка носит информационный характер и не заменяет консультацию врача."),
+        again=T("Yenidən başla", "Start over", "Начать заново"), more=T("Ətraflı", "Details", "Подробнее"), age=T("yaş", "age", "от"), step=T("Addım", "Step", "Шаг"), back=T("Geri", "Back", "Назад"),
+        products=prods)
+    js = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    return f"""<section class="section" data-tone="wine"><div class="container"><div class="quiz reveal" id="quiz">
+<div class="quiz-intro"><span class="eyebrow">{T('Sürətli seçim', 'Quick match', 'Быстрый подбор')}</span><h2>{T('Sizə hansı məhsul uyğundur?', 'Which product fits you?', 'Какой продукт вам подходит?')}</h2>
+<p>{T('3 qısa sual — etiket məlumatlarına əsasən uyğun məhsulları göstərək.', '3 short questions — we will show products that match based on label information.', '3 коротких вопроса — покажем подходящие продукты по данным на этикетках.')}</p></div>
+<div class="quiz-app" id="quiz-app"><noscript><a class="btn btn-primary" href="dermanlar.html">{T('Bütün məhsullar', 'All products', 'Все товары')}</a></noscript></div>
+<script type="application/json" id="quiz-data">{js}</script></div></div></section>"""
+
+
+def compare_data():
+    rows = []
+    for p in products():
+        ing = ", ".join(f"{nm[LANGS.index(LANG)]} {units(c)}" for nm, sm, c in p["ing"][:5]) + (" …" if len(p["ing"]) > 5 else "")
+        rows.append(dict(slug=p["slug"], name=p["name"], kind=p["kind"], form=p["form"], pack=p["pack"], use=p["indication"], ing=ing, dose=p["dose"][0], storage=p["storage"], shelf=p["shelf"], url=f"derman-{p['slug']}.html"))
+    labels = dict(kind=T("Növ", "Type", "Тип"), form=T("Forma", "Form", "Форма"), pack=T("Qablaşdırma", "Packaging", "Упаковка"), use=T("İstifadə sahəsi", "Use", "Применение"), ing=T("Əsas tərkib", "Key ingredients", "Основной состав"),
+                  dose=T("Doza", "Dosage", "Дозировка"), storage=T("Saxlanma", "Storage", "Хранение"), shelf=T("Yararlılıq", "Shelf life", "Срок годности"), open=T("Səhifəyə keç", "Open page", "Открыть"),
+                  title=T("Məhsulların müqayisəsi", "Product comparison", "Сравнение продуктов"), compare=T("Müqayisə et", "Compare", "Сравнить"), bar=T("seçildi", "selected", "выбрано"), close=T("Bağla", "Close", "Закрыть"),
+                  clear=T("Təmizlə", "Clear", "Очистить"), max=T("Ən çox 3 məhsul", "Max 3 products", "Максимум 3 продукта"))
+    js = json.dumps(dict(items=rows, labels=labels), ensure_ascii=False).replace("</", "<\\/")
+    return f'<script type="application/json" id="cmp-data">{js}</script>'
+
+
 # --------------------------------------------------------------------------- layout
 def lang_switch(page):
     out = []
@@ -540,7 +619,8 @@ def head(title, desc, page, extra=""):
 {alts}
 <link rel="icon" href="{P}favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&family=Fraunces:ital,opsz,wght@0,9..144,600..800;1,9..144,600..800&family=Playfair+Display:ital,wght@0,600..800;1,600..800&display=swap" rel="stylesheet">
+<script>(function(){{try{{var t=localStorage.getItem("theme");if(!t){{t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}}document.documentElement.dataset.theme=t}}catch(e){{}}}})()</script>
 <link rel="stylesheet" href="{P}assets/css/style.css">
 {extra}
 </head>"""
@@ -559,11 +639,16 @@ def marquee():
     return f'<div class="marquee" aria-hidden="true"><div class="track">{row}{row}</div></div>'
 
 
+def divider():
+    d = "M0 40 H300 L320 40 L336 12 L356 70 L372 28 L386 40 H760 L780 40 L796 10 L818 72 L834 26 L848 40 H1220 L1240 40 L1256 14 L1276 68 L1292 30 L1306 40 H1600"
+    return f'<div class="scroll-ecg" aria-hidden="true"><svg viewBox="0 0 1600 80" preserveAspectRatio="none"><path class="base" d="{d}"/><path class="live" d="{d}"/></svg></div>'
+
+
 def stats_block():
     n = len(products())
     items = [(str(n), T("məhsul", "products", "товаров")), ("3", T("dildə sayt", "languages", "языка сайта")),
              ("09–22", T("hər gün açıq", "open every day", "открыты ежедневно")), ("2024", T("ildən fəaliyyətdə", "founded", "год основания"))]
-    cells = "".join(f'<div class="stat reveal"><b>{a}</b><span>{b}</span></div>' for a, b in items)
+    cells = "".join(f'<div class="stat reveal"><b{(" data-count=" + chr(34) + a + chr(34)) if a.isdigit() else ""}>{a}</b><span>{b}</span></div>' for a, b in items)
     return f'<section class="section" style="padding-top:0"><div class="container"><div class="stats">{cells}</div></div></section>'
 
 
@@ -580,7 +665,7 @@ def header(active, page):
 <header class="site"><div class="container">
 <a class="logo" href="index.html" aria-label="{SITE}">{LOGO}<span>Kardio <b>Aptek</b></span></a>
 <nav class="main" id="nav" aria-label="{T('Əsas menyu', 'Main menu', 'Главное меню')}"><ul>{links}</ul></nav>
-<div class="header-cta">{lang_switch(page)}<a class="btn btn-primary btn-sm" href="tel:{PHONE_RAW}">{PHONE_ICON} {call}</a>
+<div class="header-cta">{lang_switch(page)}<button class="theme-btn" type="button" aria-label="{T('Rejimi dəyiş', 'Toggle theme', 'Сменить тему')}"><svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg><svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button><a class="btn btn-primary btn-sm" href="tel:{PHONE_RAW}">{PHONE_ICON} {call}</a>
 <button class="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav" type="button">☰</button></div>
 </div></header>
 <main id="main">"""
@@ -631,10 +716,15 @@ def cta_block():
 <a class="btn btn-outline" href="https://wa.me/{WA}" target="_blank" rel="noopener">WhatsApp</a></div></div></div></section>"""
 
 
-def product_card(p):
+def product_card(p, fly="", rich=False, pos=0):
     P = pfx()
-    return f"""<article class="card product reveal" data-cat="{p['cat']}">
-<a class="thumb" href="derman-{p['slug']}.html" aria-label="{p['name']}"><img src="{P}assets/img/{p['card']}" alt="{p['name']}" loading="lazy"></a>
+    peek = cmp = ""
+    if rich:
+        items = "".join(f"<li><span>{e(nm[LANGS.index(LANG)])}</span><b>{e(units(c))}</b></li>" for nm, sm, c in p["ing"][:4])
+        peek = f'<div class="peek" aria-hidden="true"><b>{T("Tərkib", "Ingredients", "Состав")}</b><ul>{items}</ul></div>'
+        cmp = f'<label class="cmp"><input type="checkbox" class="cmp-chk" data-slug="{p["slug"]}"><span>{T("Müqayisə", "Compare", "Сравнить")}</span></label>'
+    return f"""<article class="card product reveal {fly}" data-cat="{p['cat']}" data-pos="{pos}">
+<a class="thumb" href="derman-{p['slug']}.html" aria-label="{p['name']}"><img src="{P}assets/img/{p['card']}" alt="{p['name']}" loading="lazy">{peek}</a>{cmp}
 <div class="body"><span class="tag {'red' if p['medical'] else ''}">{p['kind']}</span><h3>{p['name']}</h3><p class="sub">{p['short']}</p>
 <div class="actions"><a class="btn btn-green btn-sm" href="derman-{p['slug']}.html">{T('Tərkib və təlimat', 'Ingredients & leaflet', 'Состав и инструкция')}</a>
 <a class="btn btn-outline btn-sm" href="tel:{PHONE_RAW}">{T('Sifariş', 'Order', 'Заказать')}</a></div></div></article>"""
@@ -655,8 +745,8 @@ def jsonld():
 def home():
     P = pfx()
     prods = products()
-    feat = "".join(product_card(p) for p in prods[:4])
-    imgs = "".join(f'<img src="{P}assets/img/{p["card"]}" alt="{p["name"]}" loading="lazy">' for p in prods[:4])
+    feat = "".join(product_card(p, fly=("from-left" if i < 2 else "from-right")) for i, p in enumerate(prods[:4]))
+    slabs = "".join(f'<div class="slab s{i+1}"><div class="slab-in"><img src="{P}assets/img/{p["card"]}" alt="{p["name"]}"><em>{p["name"]}</em></div></div>' for i, p in enumerate(prods[:4]))
     services = [
         ("pill", T("Məhsul seçimi", "Product selection", "Подбор продуктов"),
          T("Ürək-damar sağlamlığı, vitaminlər, immunitet və oynaq üçün məhsullar.", "Products for heart health, vitamins, immunity and joints.", "Продукты для здоровья сердца, витамины, иммунитет и суставы.")),
@@ -672,7 +762,7 @@ def home():
                         "Kardio Aptek — products for heart health, vitamins and everyday wellbeing, with pharmacist advice. Call: ",
                         "Kardio Aptek — товары для здоровья сердца, витамины и повседневное благополучие, консультации фармацевта. Телефон: ") + PHONE_SHOW,
                 "index.html", jsonld()) + header("index.html", "index.html") + f"""
-<section class="hero"><div class="container">
+<section class="hero" data-tone="wine"><span class="hero-giant" aria-hidden="true">KARDIO</span><div class="container">
 <div><span class="eyebrow">Kardio Aptek · {T('2024-cü ildən', 'since 2024', 'с 2024 года')}</span>
 <h1>{T('Ürəyiniz üçün <span>etibarlı</span> ünvan', 'A <span>trusted</span> address for your heart', '<span>Надёжный</span> адрес для вашего сердца')}</h1>
 <p class="lead">{T('Keyfiyyətli məhsullar, peşəkar əczaçı məsləhəti və səmimi xidmət — sağlamlığınız üçün hər zaman yanınızdayıq.',
@@ -680,12 +770,12 @@ def home():
                     'Качественные продукты, профессиональные консультации фармацевта и доброжелательный сервис — мы всегда рядом ради вашего здоровья.')}</p>
 <div class="actions"><a class="btn btn-primary" href="dermanlar.html">{T('Məhsullara bax', 'View products', 'Смотреть товары')}</a><a class="btn btn-outline" href="tel:{PHONE_RAW}">📞 {PHONE_SHOW}</a></div>
 <div class="hero-badges"><span>{T('Tərkibi açıq göstərilir', 'Ingredients clearly listed', 'Состав указан открыто')}</span><span>{T('Peşəkar məsləhət', 'Professional advice', 'Профессиональные советы')}</span><span>{hours()}</span></div></div>
-<div class="hero-visual"><div class="stack">{imgs}</div><div class="pulse">{ICON['ecg']} {T('Sağlam ürək — sağlam həyat', 'Healthy heart — healthy life', 'Здоровое сердце — здоровая жизнь')}</div></div>
+<div class="hero-visual"><div class="scene" id="scene"><span class="orbit o1"></span><span class="orbit o2"></span>{slabs}</div><div class="pulse">{ICON['ecg']} {T('Sağlam ürək — sağlam həyat', 'Healthy heart — healthy life', 'Здоровое сердце — здоровая жизнь')}</div></div>
 </div>{ecg()}</section>
 {marquee()}
 {stats_block()}
 
-<section class="section"><div class="container">
+<section class="section" data-tone="blush"><div class="container">
 <div class="section-head center"><span class="eyebrow">{T('Məhsullarımız', 'Our products', 'Наши товары')}</span><h2>{T('Seçilmiş məhsullar', 'Featured products', 'Избранные товары')}</h2>
 <p class="lead">{T('Hər məhsulun tərkibi, istifadə qaydası və qablaşdırma şəkilləri ayrıca səhifədə təqdim olunur.',
                     'Each product has its own page with ingredients, directions and packaging photos.',
@@ -694,11 +784,14 @@ def home():
 <p class="center" style="margin-top:28px"><a class="btn btn-green" href="dermanlar.html">{T('Bütün məhsullar →', 'All products →', 'Все товары →')}</a></p>
 </div></section>
 
-<section class="section alt"><div class="container">
+{divider()}
+{quiz_block()}
+<section class="section alt" data-tone="cream"><div class="container">
 <div class="section-head center"><span class="eyebrow">{T('Xidmətlər', 'Services', 'Услуги')}</span><h2>{T('Niyə Kardio Aptek?', 'Why Kardio Aptek?', 'Почему Kardio Aptek?')}</h2></div>
 <div class="grid bento">{sv}</div></div></section>
 
-<section class="section"><div class="container">
+{divider()}
+<section class="section" data-tone="rose"><div class="container">
 <div class="section-head center"><span class="eyebrow">{T('Necə işləyir', 'How it works', 'Как это работает')}</span><h2>{T('Sifariş üç addımda', 'Order in three steps', 'Заказ в три шага')}</h2></div>
 <div class="steps">
 <div class="step reveal"><h3>{T('Zəng edin', 'Call us', 'Позвоните')}</h3><p>{T(f'{PHONE_SHOW} nömrəsinə zəng edin və ya WhatsApp-da yazın.', f'Call {PHONE_SHOW} or message us on WhatsApp.', f'Позвоните на {PHONE_SHOW} или напишите в WhatsApp.')}</p></div>
@@ -770,7 +863,7 @@ def about():
 
 def catalog():
     chips = "".join(f'<button class="chip{" active" if k == "all" else ""}" data-filter="{k}" type="button">{t}</button>' for k, t in cats())
-    cards = "".join(product_card(p) for p in products())
+    cards = "".join(product_card(p, rich=True, pos=i % 5) for i, p in enumerate(products()))
     ttl = T("Dərmanlar və sağlamlıq məhsulları", "Medicines & health products", "Препараты и товары для здоровья")
     body = head(T("Dərmanlar", "Medicines", "Препараты"), T("Kardio Aptek məhsulları: Karno Mer, Depomer D3+K2, Revimer, Chondramer — tərkib, doza və qablaşdırma şəkilləri.",
                                                          "Kardio Aptek products: Karno Mer, Depomer D3+K2, Revimer, Chondramer — ingredients, dosage and packaging photos.",
@@ -782,9 +875,9 @@ def catalog():
  'Представленные ниже товары являются БАД или медицинским изделием — <strong>не лекарственными средствами</strong>. Они не предназначены для лечения заболеваний. Перед применением проконсультируйтесь с врачом.')}</div>
 <div class="toolbar"><div class="chips" role="group">{chips}</div>
 <input id="q" class="search" type="search" placeholder="{T('Məhsul axtar…', 'Search products…', 'Поиск товаров…')}" aria-label="{T('Məhsul axtar', 'Search products', 'Поиск товаров')}"></div>
-<div class="grid g4">{cards}</div>
+<div class="grid editorial">{cards}</div>
 <p class="empty">{T('Axtarışa uyğun məhsul tapılmadı. Zəng edin:', 'No matching products found. Call us:', 'Ничего не найдено. Позвоните нам:')} <a href="tel:{PHONE_RAW}">{PHONE_SHOW}</a></p>
-</div></section>{cta_block()}""" + footer()
+</div></section>{compare_data()}{cta_block()}""" + footer()
     write("dermanlar.html", body)
 
 
@@ -843,6 +936,7 @@ def detail(p):
 <div class="fact"><small>{T('Yararlılıq müddəti', 'Shelf life', 'Срок годности')}</small><b>{p['shelf']}</b></div></div>
 
 {about_html}{uses_html}
+{calc_widget(p)}
 <div class="info-block"><h3>{T('Tərkibi', 'Ingredients', 'Состав')}</h3>
 <table class="ing"><caption style="caption-side:top;padding-bottom:8px">{p['comp_title']}</caption><thead><tr><th>{T('Maddə', 'Ingredient', 'Вещество')}</th><th style="text-align:right">{T('Miqdar', 'Amount', 'Количество')}</th></tr></thead><tbody>{rows}</tbody></table></div>
 <div class="info-block"><h3>{T('Köməkçi maddələr', 'Excipients', 'Вспомогательные вещества')}</h3><p>{p['excip']}</p></div>
