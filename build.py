@@ -15,9 +15,9 @@ MAPQ = "Qara Qarayev metrostansiyası, S. Mirzəyev küçəsi, Bakı, Azerbaijan
 MAP_LINK = "https://www.google.com/maps/search/?api=1&query=" + MAPQ.replace(" ", "+")
 MAP_DIR = "https://www.google.com/maps/dir/?api=1&destination=" + MAPQ.replace(" ", "+")
 
-LOGO = ('<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="kg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ee4d6e"/><stop offset="1" stop-color="#8a0f2f"/></linearGradient></defs><rect width="48" height="48" rx="12" fill="url(#kg)"/>'
+LOGO = ('<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="kg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1aa093"/><stop offset="1" stop-color="#0a4f4a"/></linearGradient></defs><rect width="48" height="48" rx="12" fill="url(#kg)"/>'
         '<path d="M24 38S9 29.5 9 19.2C9 14.6 12.4 11 16.7 11c3 0 5.6 1.7 7.3 4.3C25.700 12.700 28.300 11 31.300 11 35.600 11 39 14.600 39 19.200 39 29.500 24 38 24 38Z" fill="#fff"/>'
-        '<path d="M12 23h7l2.500-5 4 10 2.500-5H36" fill="none" stroke="#b3123a" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+        '<path d="M12 23h7l2.500-5 4 10 2.500-5H36" fill="none" stroke="#d9234a" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/></svg>')
 
 ICON = {
     "pill": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5-7-7a4.950 4.950 0 0 1 7-7l7 7a4.950 4.950 0 0 1-7 7Z"/><path d="m8.500 8.500 7 7"/></svg>',
@@ -614,7 +614,7 @@ def head(title, desc, page, extra=""):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(full)}</title>
 <meta name="description" content="{e(desc)}">
-<meta name="theme-color" content="#5e0b22">
+<meta name="theme-color" content="#073b36">
 <meta property="og:title" content="{e(full)}"><meta property="og:description" content="{e(desc)}"><meta property="og:type" content="website"><meta property="og:locale" content="{OG_LOCALE[LANG]}">
 {alts}
 <link rel="icon" href="{P}favicon.svg" type="image/svg+xml">
