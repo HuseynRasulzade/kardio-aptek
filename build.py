@@ -64,7 +64,7 @@ def units(x):
 
 
 def hours():
-    return T("Hər gün 09:00 – 22:00", "Every day 09:00 – 22:00", "Ежедневно 09:00 – 22:00")
+    return T("Hər gün 08:00 – 01:00", "Every day 08:00 – 01:00", "Ежедневно 08:00 – 01:00")
 
 
 def city():
@@ -632,9 +632,9 @@ def ecg():
 
 
 def marquee():
-    items = T(["Ürək sağlamlığı", "Tərkibi açıq göstərilir", "Peşəkar əczaçı məsləhəti", "Hər gün 09:00 – 22:00", "Qara Qarayev metrosu yaxınlığı", "AZ · EN · RU", "Keyfiyyətli məhsullar", "Seriya və tarix yoxlanılır"],
-              ["Heart health", "Ingredients clearly listed", "Professional pharmacist advice", "Every day 09:00 – 22:00", "Near Qara Qarayev metro", "AZ · EN · RU", "Quality products", "Batch and dates checked"],
-              ["Здоровье сердца", "Состав указан открыто", "Консультации фармацевта", "Ежедневно 09:00 – 22:00", "Рядом с метро «Гара Гараев»", "AZ · EN · RU", "Качественные товары", "Серии и сроки проверяются"])
+    items = T(["Ürək sağlamlığı", "Tərkibi açıq göstərilir", "Peşəkar əczaçı məsləhəti", "Hər gün 08:00 – 01:00", "Qara Qarayev metrosu yaxınlığı", "AZ · EN · RU", "Keyfiyyətli məhsullar", "Seriya və tarix yoxlanılır"],
+              ["Heart health", "Ingredients clearly listed", "Professional pharmacist advice", "Every day 08:00 – 01:00", "Near Qara Qarayev metro", "AZ · EN · RU", "Quality products", "Batch and dates checked"],
+              ["Здоровье сердца", "Состав указан открыто", "Консультации фармацевта", "Ежедневно 08:00 – 01:00", "Рядом с метро «Гара Гараев»", "AZ · EN · RU", "Качественные товары", "Серии и сроки проверяются"])
     row = "".join(f"<span>{x}</span>" for x in items)
     return f'<div class="marquee" aria-hidden="true"><div class="track">{row}{row}</div></div>'
 
@@ -647,7 +647,7 @@ def divider():
 def stats_block():
     n = len(products())
     items = [(str(n), T("məhsul", "products", "товаров")), 
-             ("09:00 – 22:00", T("hər gün açıq", "open every day", "открыты ежедневно")), ("2024", T("ildən fəaliyyətdə", "founded", "год основания"))]
+             ("08:00 – 01:00", T("hər gün açıq", "open every day", "открыты ежедневно")), ("2024", T("ildən fəaliyyətdə", "founded", "год основания"))]
     cells = "".join(f'<div class="stat reveal"><b{(" data-count=" + chr(34) + a + chr(34)) if a.isdigit() else " class=" + chr(34) + "t" + chr(34)}>{a}</b><span>{b}</span></div>' for a, b in items)
     return f'<section class="section" style="padding-top:0"><div class="container"><div class="stats">{cells}</div></div></section>'
 
@@ -738,7 +738,7 @@ def write(name, html):
 def jsonld():
     return ('<script type="application/ld+json">{"@context":"https://schema.org","@type":"Pharmacy","name":"Kardio Aptek",'
             f'"telephone":"{PHONE_RAW}","address":{{"@type":"PostalAddress","streetAddress":"S. Mirzəyev küçəsi","addressLocality":"Bakı","postalCode":"AZ1002","addressCountry":"AZ"}},'
-            '"openingHours":"Mo-Su 09:00-22:00","foundingDate":"2024"}</script>')
+            '"openingHours":["Mo-Su 08:00-24:00","Mo-Su 00:00-01:00"],"foundingDate":"2024"}</script>')
 
 
 # --------------------------------------------------------------------------- pages
